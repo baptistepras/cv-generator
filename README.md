@@ -38,7 +38,7 @@ Everything is done from `index.html` (no framework): the UI edits a structured s
 
 ## Quick start
 
-1. Open `index.html` in a browser.
+1. Open the website https://baptistepras.github.io/cv-generator/.
 2. Fill **Personal Info** (top block).
 3. Add sections (Education, Experience, Projects, etc.).
 4. Click **Compile & Preview** to generate a PDF.
