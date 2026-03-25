@@ -6,382 +6,218 @@
 <title>LaTeX CV Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ── Variables ─────────────────────────────────────────────── */
 :root {
-  --bg:        #ffffff;
-  --bg2:       #f4f4f4;
-  --bg3:       #e8e8e8;
-  --border:    #cccccc;
-  --border2:   #aaaaaa;
-  --text:      #111111;
-  --text2:     #444444;
-  --text3:     #777777;
-  --accent:    #111111;
-  --accent-fg: #ffffff;
-  --input-bg:  #ffffff;
-  --shadow:    0 2px 8px rgba(0,0,0,.10);
-  --shadow-lg: 0 6px 24px rgba(0,0,0,.14);
-  --radius:    4px;
-  --mono:      'JetBrains Mono', monospace;
-  --sans:      'DM Sans', sans-serif;
-  --danger:    #cc2222;
-  --drag-over: #d0e8ff;
+  --bg:#ffffff; --bg2:#f4f4f4; --bg3:#e8e8e8;
+  --border:#cccccc; --border2:#aaaaaa;
+  --text:#111111; --text2:#444444; --text3:#777777;
+  --accent:#111111; --accent-fg:#ffffff;
+  --input-bg:#ffffff;
+  --shadow:0 2px 8px rgba(0,0,0,.10);
+  --shadow-lg:0 6px 24px rgba(0,0,0,.14);
+  --radius:4px;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --danger:#cc2222;
 }
 [data-theme="dark"] {
-  --bg:        #0f0f0f;
-  --bg2:       #1a1a1a;
-  --bg3:       #242424;
-  --border:    #333333;
-  --border2:   #555555;
-  --text:      #f0f0f0;
-  --text2:     #bbbbbb;
-  --text3:     #777777;
-  --accent:    #f0f0f0;
-  --accent-fg: #0f0f0f;
-  --input-bg:  #1a1a1a;
-  --shadow:    0 2px 8px rgba(0,0,0,.40);
-  --shadow-lg: 0 6px 24px rgba(0,0,0,.60);
-  --drag-over: #1a2a3a;
+  --bg:#0f0f0f; --bg2:#1a1a1a; --bg3:#242424;
+  --border:#333333; --border2:#555555;
+  --text:#f0f0f0; --text2:#bbbbbb; --text3:#777777;
+  --accent:#f0f0f0; --accent-fg:#0f0f0f;
+  --input-bg:#1a1a1a;
+  --shadow:0 2px 8px rgba(0,0,0,.40);
+  --shadow-lg:0 6px 24px rgba(0,0,0,.60);
 }
-
-/* ── Reset ─────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px;scroll-behavior:smooth}
-body{
-  font-family:var(--sans);
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  transition:background .25s,color .25s;
-}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}
 button{cursor:pointer;font-family:var(--sans)}
 input,textarea,select{font-family:var(--sans)}
-a{color:inherit}
-
-/* ── Top bar ───────────────────────────────────────────────── */
 #topbar{
-  position:sticky;top:0;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.75rem 2rem;
-  background:var(--bg);
-  border-bottom:1.5px solid var(--border);
-  box-shadow:var(--shadow);
+  position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 2rem;background:var(--bg);border-bottom:1.5px solid var(--border);box-shadow:var(--shadow);
 }
-#topbar h1{
-  font-family:var(--mono);
-  font-size:1rem;
-  font-weight:700;
-  letter-spacing:.04em;
-  color:var(--text);
-}
+#topbar h1{font-family:var(--mono);font-size:1rem;font-weight:700;letter-spacing:.04em}
 .topbar-right{display:flex;gap:.6rem;align-items:center}
-
-/* ── Buttons ───────────────────────────────────────────────── */
 .btn{
-  display:inline-flex;align-items:center;gap:.4rem;
-  padding:.45rem 1rem;
+  display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;
   font-size:.82rem;font-weight:600;letter-spacing:.03em;
-  border:1.5px solid var(--border2);
-  border-radius:var(--radius);
-  background:transparent;
-  color:var(--text);
-  transition:background .15s,color .15s,border-color .15s;
-  white-space:nowrap;
+  border:1.5px solid var(--border2);border-radius:var(--radius);
+  background:transparent;color:var(--text);
+  transition:background .15s,color .15s,border-color .15s;white-space:nowrap;
 }
 .btn:hover{background:var(--bg3);border-color:var(--text)}
-.btn.primary{
-  background:var(--accent);color:var(--accent-fg);border-color:var(--accent);
-}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .btn.primary:hover{opacity:.85}
 .btn.danger{color:var(--danger);border-color:var(--danger)}
 .btn.danger:hover{background:var(--danger);color:#fff}
 .btn.sm{padding:.28rem .65rem;font-size:.75rem}
-.btn.icon{padding:.4rem .5rem;font-size:1rem;line-height:1}
-
-/* ── Theme toggle ──────────────────────────────────────────── */
 #theme-toggle{
-  width:2.1rem;height:2.1rem;
-  display:flex;align-items:center;justify-content:center;
-  border:1.5px solid var(--border2);
-  border-radius:var(--radius);
-  background:transparent;
-  font-size:1rem;
-  cursor:pointer;
-  color:var(--text);
-  transition:background .15s;
+  width:2.1rem;height:2.1rem;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border2);border-radius:var(--radius);
+  background:transparent;font-size:1rem;cursor:pointer;color:var(--text);transition:background .15s;
 }
 #theme-toggle:hover{background:var(--bg3)}
-
-/* ── Layout ────────────────────────────────────────────────── */
-#app{
-  max-width:860px;
-  margin:0 auto;
-  padding:2rem 1.5rem 6rem;
-}
-
-/* ── Personal info block ───────────────────────────────────── */
+#app{max-width:860px;margin:0 auto;padding:2rem 1.5rem 6rem}
 .personal-block{
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  padding:1.25rem 1.5rem;
-  margin-bottom:1.75rem;
-  background:var(--bg2);
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:1.25rem 1.5rem;margin-bottom:1.75rem;background:var(--bg2);
 }
 .personal-block h2{
-  font-family:var(--mono);
-  font-size:.78rem;
-  font-weight:700;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:var(--text3);
-  margin-bottom:1rem;
+  font-family:var(--mono);font-size:.78rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem;
 }
-
-/* ── Field grid ────────────────────────────────────────────── */
 .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem .9rem}
-.field-grid.single{grid-template-columns:1fr}
 .field-group{display:flex;flex-direction:column;gap:.3rem}
-.field-group label{
-  font-size:.72rem;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--text3);
+.field-group label{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.field-group input{
+  background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius);
+  color:var(--text);padding:.42rem .6rem;font-size:.9rem;outline:none;
+  transition:border-color .15s;width:100%;
 }
-.field-group input,.field-group textarea{
-  background:var(--input-bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
-  padding:.42rem .6rem;
-  font-size:.9rem;
-  outline:none;
-  transition:border-color .15s;
-  resize:vertical;
-}
-.field-group input:focus,.field-group textarea:focus{border-color:var(--border2)}
-
-/* ── Sections wrapper ──────────────────────────────────────── */
+.field-group input:focus{border-color:var(--border2)}
 #sections-list{display:flex;flex-direction:column;gap:1.25rem}
-
-/* ── Section card ──────────────────────────────────────────── */
 .section-card{
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  background:var(--bg2);
-  overflow:hidden;
-  transition:box-shadow .15s,border-color .15s;
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  background:var(--bg2);overflow:hidden;transition:box-shadow .15s,border-color .15s;
 }
-.section-card.drag-over{
-  border-color:var(--border2);
-  box-shadow:var(--shadow-lg);
-  outline:2px dashed var(--border2);
+.section-card.drag-over,.pagebreak-card.drag-over{
+  border-color:var(--border2);box-shadow:var(--shadow-lg);outline:2px dashed var(--border2);
 }
-
 .section-header{
-  display:flex;align-items:center;gap:.6rem;
-  padding:.7rem 1rem;
-  border-bottom:1.5px solid var(--border);
-  background:var(--bg3);
-  user-select:none;
+  display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;
+  border-bottom:1.5px solid var(--border);background:var(--bg3);user-select:none;
 }
-.section-drag-handle{
-  font-size:1.1rem;color:var(--text3);
-  cursor:grab;padding:.1rem .3rem;
-  border-radius:2px;
-}
+.section-drag-handle{font-size:1.1rem;color:var(--text3);cursor:grab;padding:.1rem .3rem;border-radius:2px}
 .section-drag-handle:active{cursor:grabbing}
 .section-drag-handle:hover{color:var(--text2)}
-
 .section-name{
-  flex:1;
-  font-family:var(--mono);
-  font-size:.82rem;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--text);
+  flex:1;font-family:var(--mono);font-size:.82rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text);
   background:transparent;border:none;outline:none;
 }
-.section-name:focus{
-  background:var(--input-bg);
-  border-bottom:1.5px solid var(--border2);
-  padding:0 .3rem;
-}
-
+.section-name:focus{background:var(--input-bg);border-bottom:1.5px solid var(--border2);padding:0 .3rem}
 .section-actions{display:flex;gap:.4rem;margin-left:auto}
-
 .section-body{padding:1rem 1rem .8rem}
-
-/* ── Entry card ────────────────────────────────────────────── */
+.section-type-label{font-size:.68rem;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-left:.3rem}
+/* pagebreak */
+.pagebreak-card{
+  border:1.5px dashed var(--border2);border-radius:var(--radius);background:var(--bg2);overflow:hidden;
+}
+.pagebreak-header{
+  display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;
+  background:var(--bg3);user-select:none;
+}
+.pagebreak-label{
+  flex:1;font-family:var(--mono);font-size:.82rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text3);
+}
+/* entries */
 .entries-list{display:flex;flex-direction:column;gap:.75rem}
-
-.entry-card{
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  background:var(--bg);
-  overflow:hidden;
-}
-.entry-card.drag-over{
-  outline:2px dashed var(--border2);
-}
-
+.entry-card{border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);overflow:hidden}
+.entry-card.drag-over{outline:2px dashed var(--border2)}
 .entry-header{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.45rem .7rem;
-  background:var(--bg2);
-  border-bottom:1.5px solid var(--border);
-  cursor:pointer;
-  user-select:none;
+  display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;
+  background:var(--bg2);border-bottom:1.5px solid var(--border);cursor:pointer;user-select:none;
 }
-.entry-drag-handle{
-  font-size:.95rem;color:var(--text3);
-  cursor:grab;
-}
+.entry-drag-handle{font-size:.95rem;color:var(--text3);cursor:grab}
 .entry-drag-handle:active{cursor:grabbing}
-.entry-title-preview{
-  flex:1;font-size:.82rem;font-weight:500;color:var(--text2);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
+.entry-title-preview{flex:1;font-size:.82rem;font-weight:500;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .entry-toggle{font-size:.8rem;color:var(--text3);transition:transform .2s}
 .entry-toggle.open{transform:rotate(180deg)}
-
 .entry-body{padding:.75rem .8rem;display:none}
 .entry-body.open{display:block}
-
 .entry-fields{display:flex;flex-direction:column;gap:.55rem}
-.entry-field{display:flex;flex-direction:column;gap:.25rem}
+.entry-field{display:flex;flex-direction:column;gap:0}
 .entry-field label{
   font-size:.68rem;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--text3);
+  text-transform:uppercase;color:var(--text3);margin-bottom:.25rem;
 }
-.entry-field input,.entry-field textarea{
-  background:var(--input-bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
-  padding:.38rem .55rem;
-  font-size:.88rem;
-  outline:none;
-  transition:border-color .15s;
-  resize:vertical;
-  width:100%;
+.entry-field input{
+  background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius);
+  color:var(--text);padding:.38rem .55rem;font-size:.88rem;outline:none;
+  transition:border-color .15s;width:100%;
 }
-.entry-field textarea{min-height:62px}
+.entry-field textarea{
+  background:var(--input-bg);border:1.5px solid var(--border);
+  border-radius:0 0 var(--radius) var(--radius);
+  color:var(--text);padding:.38rem .55rem;font-size:.88rem;outline:none;
+  transition:border-color .15s;resize:vertical;width:100%;min-height:62px;
+}
 .entry-field input:focus,.entry-field textarea:focus{border-color:var(--border2)}
-
 .entry-footer{
-  display:flex;justify-content:flex-end;
-  padding:.5rem .8rem;
-  border-top:1.5px solid var(--border);
-  background:var(--bg2);
+  display:flex;justify-content:flex-end;padding:.5rem .8rem;
+  border-top:1.5px solid var(--border);background:var(--bg2);
 }
-
-/* ── Add entry button ──────────────────────────────────────── */
-.add-entry-row{
-  margin-top:.65rem;
-  display:flex;justify-content:center;
+/* rich text toolbar */
+.rich-toolbar{
+  display:flex;align-items:center;gap:3px;
+  background:var(--bg3);border:1.5px solid var(--border);border-bottom:none;
+  border-radius:var(--radius) var(--radius) 0 0;padding:3px 5px;
 }
-
-/* ── Add section bar ───────────────────────────────────────── */
-#add-section-bar{
-  margin-top:1.25rem;
-  display:flex;justify-content:center;
-  gap:.7rem;flex-wrap:wrap;
+.rtb{
+  padding:1px 7px;font-size:.78rem;font-weight:700;line-height:1.5;
+  border:1px solid var(--border2);border-radius:2px;
+  background:var(--bg2);color:var(--text);cursor:pointer;transition:background .1s;
 }
-
-/* ── Action bar (bottom) ───────────────────────────────────── */
+.rtb:hover{background:var(--border)}
+.rtb.italic-btn{font-style:italic}
+.rtb.under-btn{text-decoration:underline}
+.rich-hint{font-size:.63rem;color:var(--text3);margin-left:4px;line-height:1.3}
+/* add row */
+.add-entry-row{margin-top:.65rem;display:flex;justify-content:center}
+#add-section-bar{margin-top:1.25rem;display:flex;justify-content:center;gap:.7rem;flex-wrap:wrap}
+/* action bar */
 #action-bar{
   position:fixed;bottom:0;left:0;right:0;
   display:flex;justify-content:center;gap:.75rem;align-items:center;
-  padding:.9rem 2rem;
-  background:var(--bg);
-  border-top:1.5px solid var(--border);
-  box-shadow:0 -4px 16px rgba(0,0,0,.15);
-  z-index:100;
+  padding:.9rem 2rem;background:var(--bg);
+  border-top:1.5px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.15);z-index:100;
 }
-
-/* ── Modal ─────────────────────────────────────────────────── */
+/* modals */
 .modal-backdrop{
-  display:none;
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.55);
-  z-index:500;
-  align-items:center;justify-content:center;
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;align-items:center;justify-content:center;
 }
 .modal-backdrop.open{display:flex}
 .modal{
-  background:var(--bg2);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  width:min(92vw,820px);
-  max-height:90vh;
-  display:flex;flex-direction:column;
-  box-shadow:var(--shadow-lg);
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);
+  width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);
 }
 .modal-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:.75rem 1.1rem;
-  border-bottom:1.5px solid var(--border);
-  background:var(--bg3);
+  padding:.75rem 1.1rem;border-bottom:1.5px solid var(--border);background:var(--bg3);
 }
-.modal-header h3{
-  font-family:var(--mono);font-size:.85rem;font-weight:700;letter-spacing:.07em;
-}
-.modal-body{
-  flex:1;overflow:auto;
-  padding:1.1rem;
-}
+.modal-header h3{font-family:var(--mono);font-size:.85rem;font-weight:700;letter-spacing:.07em}
+.modal-body{flex:1;overflow:auto;padding:1.1rem}
 .modal-footer{
   display:flex;justify-content:flex-end;gap:.6rem;
-  padding:.75rem 1.1rem;
-  border-top:1.5px solid var(--border);
-  background:var(--bg3);
+  padding:.75rem 1.1rem;border-top:1.5px solid var(--border);background:var(--bg3);
 }
-
-/* ── Code viewer ───────────────────────────────────────────── */
 #latex-code{
-  font-family:var(--mono);
-  font-size:.76rem;
-  line-height:1.65;
-  background:var(--bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  padding:1rem;
-  white-space:pre;
-  overflow:auto;
-  color:var(--text);
-  max-height:60vh;
+  font-family:var(--mono);font-size:.76rem;line-height:1.65;
+  background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:1rem;white-space:pre;overflow:auto;color:var(--text);max-height:60vh;
 }
-
-/* ── PDF viewer ────────────────────────────────────────────── */
-#pdf-frame{
-  width:100%;height:60vh;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  background:#fff;
+#pdf-frame{width:100%;height:55vh;border:1.5px solid var(--border);border-radius:var(--radius);background:#fff}
+#pdf-status{font-size:.85rem;color:var(--text2);padding:.5rem 0;text-align:center}
+#debug-log{
+  font-family:var(--mono);font-size:.72rem;line-height:1.55;
+  background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:.6rem .8rem;white-space:pre-wrap;overflow:auto;color:var(--text3);
+  max-height:130px;margin-top:.6rem;display:none;
 }
-#pdf-status{
-  font-size:.85rem;color:var(--text2);
-  padding:.5rem 0;text-align:center;
+#debug-log.visible{display:block}
+#debug-toggle{
+  font-size:.72rem;color:var(--text3);background:none;border:none;cursor:pointer;
+  text-decoration:underline;padding:.3rem 0;display:none;
 }
-
-/* ── Spinner ───────────────────────────────────────────────── */
 .spinner{
-  display:inline-block;
-  width:1em;height:1em;
-  border:2px solid var(--border);
-  border-top-color:var(--text);
-  border-radius:50%;
-  animation:spin .7s linear infinite;
-  vertical-align:middle;
+  display:inline-block;width:1em;height:1em;
+  border:2px solid var(--border);border-top-color:var(--text);
+  border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Misc ──────────────────────────────────────────────────── */
-.divider{height:1.5px;background:var(--border);margin:.5rem 0}
-.section-type-label{
-  font-size:.68rem;font-weight:600;color:var(--text3);
-  letter-spacing:.07em;text-transform:uppercase;
-  margin-left:.3rem;
-}
-
-/* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg2)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -389,471 +225,474 @@ a{color:inherit}
 </head>
 <body>
 
-<!-- ── Top bar ─────────────────────────────────────────────── -->
 <div id="topbar">
-  <h1>⬛ CV GENERATOR</h1>
+  <h1>&#11035; CV GENERATOR</h1>
   <div class="topbar-right">
     <button class="btn sm" id="btn-load-demo">Load example</button>
-    <button id="theme-toggle" title="Toggle theme">☀</button>
+    <button id="theme-toggle" title="Toggle theme">&#9728;</button>
   </div>
 </div>
 
-<!-- ── Main app ────────────────────────────────────────────── -->
 <div id="app">
-
-  <!-- Personal info -->
   <div class="personal-block">
     <h2>Personal Info</h2>
     <div class="field-grid">
-      <div class="field-group">
-        <label>Full name</label>
-        <input type="text" id="pi-name" placeholder="Jean Dupont"/>
-      </div>
-      <div class="field-group">
-        <label>Title / tagline</label>
-        <input type="text" id="pi-title" placeholder="Master's student in Artificial Intelligence"/>
-      </div>
-      <div class="field-group">
-        <label>Email</label>
-        <input type="text" id="pi-email" placeholder="you@example.com"/>
-      </div>
-      <div class="field-group">
-        <label>Website</label>
-        <input type="text" id="pi-website" placeholder="yoursite.com"/>
-      </div>
-      <div class="field-group">
-        <label>GitHub URL</label>
-        <input type="text" id="pi-github" placeholder="https://github.com/you"/>
-      </div>
-      <div class="field-group">
-        <label>LinkedIn URL</label>
-        <input type="text" id="pi-linkedin" placeholder="https://linkedin.com/in/you"/>
-      </div>
+      <div class="field-group"><label>Full name</label><input type="text" id="pi-name" placeholder="Jean Dupont"/></div>
+      <div class="field-group"><label>Title / tagline</label><input type="text" id="pi-title" placeholder="Master's student in AI"/></div>
+      <div class="field-group"><label>Email</label><input type="text" id="pi-email" placeholder="you@example.com"/></div>
+      <div class="field-group"><label>Website (no https://)</label><input type="text" id="pi-website" placeholder="yoursite.com"/></div>
+      <div class="field-group"><label>GitHub URL</label><input type="text" id="pi-github" placeholder="https://github.com/you"/></div>
+      <div class="field-group"><label>LinkedIn URL</label><input type="text" id="pi-linkedin" placeholder="https://linkedin.com/in/you"/></div>
     </div>
   </div>
-
-  <!-- Sections -->
   <div id="sections-list"></div>
-
-  <!-- Add section -->
   <div id="add-section-bar">
-    <button class="btn" onclick="addSection('generic')">+ Generic section</button>
     <button class="btn" onclick="addSection('education')">+ Education</button>
     <button class="btn" onclick="addSection('experience')">+ Experience</button>
     <button class="btn" onclick="addSection('publication')">+ Publications</button>
     <button class="btn" onclick="addSection('project')">+ Projects</button>
     <button class="btn" onclick="addSection('skills')">+ Skills</button>
     <button class="btn" onclick="addSection('languages')">+ Languages</button>
+    <button class="btn" onclick="addSection('generic')">+ Generic (raw LaTeX)</button>
+    <button class="btn" onclick="addSection('pagebreak')">&#8629; Page break</button>
   </div>
 </div>
 
-<!-- ── Bottom action bar ────────────────────────────────────── -->
 <div id="action-bar">
-  <button class="btn" onclick="openLatexModal()">📄 View LaTeX</button>
-  <button class="btn primary" onclick="openPdfModal()">🖨 Compile &amp; Preview PDF</button>
+  <button class="btn" onclick="openLatexModal()">&#128196; View LaTeX</button>
+  <button class="btn primary" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
 </div>
 
-<!-- ── LaTeX modal ──────────────────────────────────────────── -->
+<!-- LaTeX modal -->
 <div class="modal-backdrop" id="latex-modal">
   <div class="modal">
     <div class="modal-header">
       <h3>LATEX SOURCE</h3>
-      <button class="btn sm" onclick="closeModal('latex-modal')">✕ Close</button>
+      <button class="btn sm" onclick="closeModal('latex-modal')">&#10005; Close</button>
     </div>
-    <div class="modal-body">
-      <pre id="latex-code"></pre>
-    </div>
+    <div class="modal-body"><pre id="latex-code"></pre></div>
     <div class="modal-footer">
-      <button class="btn" onclick="copyLatex()">📋 Copy</button>
-      <button class="btn" onclick="downloadLatex()">⬇ Download .tex</button>
+      <button class="btn" onclick="copyLatex()">&#128203; Copy</button>
+      <button class="btn" onclick="downloadLatex()">&#8595; Download .tex</button>
     </div>
   </div>
 </div>
 
-<!-- ── PDF modal ────────────────────────────────────────────── -->
+<!-- PDF modal -->
 <div class="modal-backdrop" id="pdf-modal">
   <div class="modal">
     <div class="modal-header">
       <h3>PDF PREVIEW</h3>
-      <button class="btn sm" onclick="closeModal('pdf-modal')">✕ Close</button>
+      <button class="btn sm" onclick="closeModal('pdf-modal')">&#10005; Close</button>
     </div>
     <div class="modal-body">
-      <div id="pdf-status">Compiling…  <span class="spinner"></span></div>
+      <div id="pdf-status"></div>
       <iframe id="pdf-frame" style="display:none"></iframe>
+      <button id="debug-toggle" onclick="toggleDebug()">&#9658; Debug log</button>
+      <pre id="debug-log"></pre>
     </div>
     <div class="modal-footer">
-      <button class="btn primary" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">⬇ Download PDF</button>
+      <button class="btn" id="btn-overleaf" style="display:none" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
+      <button class="btn primary" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
     </div>
   </div>
 </div>
 
 <script>
 /* ═══════════════════════════════════════════════════════
-   DATA MODEL
+   STATE + SCHEMAS
    ═══════════════════════════════════════════════════════ */
+var state   = { sections: [] };
+var pdfBlob = null;
 
-/*
- * Each section has: { id, type, name, entries[] }
- * Each entry has:   { id, fields: { key: value } }
- * Field schemas per type are defined in SCHEMAS.
- */
-
-let state = { sections: [] };
-let pdfBlob = null;
-
-const SCHEMAS = {
+var SCHEMAS = {
   education: [
-    { key: 'degree',      label: 'Degree / Program',  type: 'input' },
-    { key: 'institution', label: 'Institution',        type: 'input' },
-    { key: 'note',        label: 'Note (honors…)',     type: 'input' },
-    { key: 'dateRange',   label: 'Date range',         type: 'input' },
-    { key: 'location',   label: 'Location',            type: 'input' },
+    { key: 'degree',      label: 'Degree / Program',          type: 'input'    },
+    { key: 'institution', label: 'Institution',               type: 'input'    },
+    { key: 'note',        label: 'Note (e.g. Honors)',        type: 'input'    },
+    { key: 'dateRange',   label: 'Date range',                type: 'input'    },
+    { key: 'location',    label: 'Location',                  type: 'input'    }
   ],
   experience: [
-    { key: 'role',        label: 'Role / Title',       type: 'input' },
-    { key: 'org',         label: 'Organization',       type: 'input' },
-    { key: 'dateRange',   label: 'Date range',         type: 'input' },
-    { key: 'location',   label: 'Location',            type: 'input' },
-    { key: 'description',label: 'Description',         type: 'textarea' },
-    { key: 'contact',     label: 'Contact (optional)', type: 'input' },
+    { key: 'role',        label: 'Role / Title',              type: 'input'    },
+    { key: 'org',         label: 'Organization',              type: 'input'    },
+    { key: 'dateRange',   label: 'Date range',                type: 'input'    },
+    { key: 'location',    label: 'Location',                  type: 'input'    },
+    { key: 'description', label: 'Description',               type: 'textarea' },
+    { key: 'contact',     label: 'Contact (optional)',        type: 'input'    }
   ],
   publication: [
-    { key: 'title',  label: 'Title',  type: 'input' },
-    { key: 'venue',  label: 'Venue',  type: 'input' },
+    { key: 'title',       label: 'Title',                     type: 'input'    },
+    { key: 'venue',       label: 'Venue',                     type: 'input'    }
   ],
   project: [
-    { key: 'title',       label: 'Title',       type: 'input' },
-    { key: 'url',         label: 'URL',         type: 'input' },
-    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'title',       label: 'Title',                     type: 'input'    },
+    { key: 'url',         label: 'URL',                       type: 'input'    },
+    { key: 'description', label: 'Description',               type: 'textarea' }
   ],
   skills: [
-    { key: 'category',    label: 'Category',    type: 'input' },
-    { key: 'items',       label: 'Items',       type: 'textarea' },
+    { key: 'category',    label: 'Category',                  type: 'input'    },
+    { key: 'items',       label: 'Items',                     type: 'textarea' }
   ],
   languages: [
-    { key: 'language',    label: 'Language',    type: 'input' },
-    { key: 'level',       label: 'Level',       type: 'input' },
-    { key: 'certs',       label: 'Certifications (optional)', type: 'input' },
+    { key: 'language',    label: 'Language',                  type: 'input'    },
+    { key: 'level',       label: 'Level',                     type: 'input'    },
+    { key: 'certs',       label: 'Certifications (optional)', type: 'input'    }
   ],
   generic: [
-    { key: 'content',     label: 'Content (LaTeX or plain text)', type: 'textarea' },
+    { key: 'content',     label: 'Raw LaTeX content',         type: 'textarea' }
   ],
+  pagebreak: []
 };
 
-const TYPE_LABELS = {
-  education:   'Education',
-  experience:  'Experience',
-  publication: 'Publications',
-  project:     'Projects',
-  skills:      'Skills',
-  languages:   'Languages',
-  generic:     'Generic',
+var TYPE_LABELS = {
+  education: 'Education', experience: 'Experience', publication: 'Publications',
+  project: 'Projects', skills: 'Skills', languages: 'Languages',
+  generic: 'Generic', pagebreak: 'Page Break'
 };
 
-/* ═══════════════════════════════════════════════════════
-   ID GENERATION
-   ═══════════════════════════════════════════════════════ */
-let _id = 0;
-const uid = () => `id${++_id}`;
+var _id = 0;
+function uid() { return 'id' + (++_id); }
 
-/* ═══════════════════════════════════════════════════════
-   THEME
-   ═══════════════════════════════════════════════════════ */
-const themeBtn = document.getElementById('theme-toggle');
-themeBtn.addEventListener('click', () => {
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+/* ── Theme ── */
+document.getElementById('theme-toggle').addEventListener('click', function() {
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
-  themeBtn.textContent = dark ? '🌙' : '☀';
+  document.getElementById('theme-toggle').innerHTML = dark ? '&#127769;' : '&#9728;';
 });
+
+/* ═══════════════════════════════════════════════════════
+   HTML ESCAPE
+   ═══════════════════════════════════════════════════════ */
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════
+   LATEX ESCAPE (user text only)
+   ═══════════════════════════════════════════════════════ */
+function le(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/\\/g,  '\\textbackslash{}')
+    .replace(/&/g,   '\\&')
+    .replace(/%/g,   '\\%')
+    .replace(/\$/g,  '\\$')
+    .replace(/#/g,   '\\#')
+    .replace(/_/g,   '\\_')
+    .replace(/\{/g,  '\\{')
+    .replace(/\}/g,  '\\}')
+    .replace(/~/g,   '\\textasciitilde{}')
+    .replace(/\^/g,  '\\textasciicircum{}');
+}
+
+/* ═══════════════════════════════════════════════════════
+   RICH TEXT  →  LATEX
+   Markers: **bold**  *italic*  !!underline!!
+   ═══════════════════════════════════════════════════════ */
+
+/** Convert rich markers in user text to LaTeX commands, escaping plain parts. */
+function richToLatex(s) {
+  if (!s) return '';
+  // tokenize: ** before * so bold isn't partially matched as italic
+  var re = /(\*\*[\s\S]+?\*\*|!![\s\S]+?!!|\*[\s\S]+?\*)/g;
+  var parts = [];
+  var last = 0, m;
+  while ((m = re.exec(s)) !== null) {
+    if (m.index > last) parts.push({ t: 'plain', v: s.slice(last, m.index) });
+    var raw = m[0];
+    if (raw.slice(0,2) === '**')      parts.push({ t: 'bold', v: raw.slice(2,-2) });
+    else if (raw.slice(0,2) === '!!') parts.push({ t: 'ul',   v: raw.slice(2,-2) });
+    else                              parts.push({ t: 'ital', v: raw.slice(1,-1) });
+    last = m.index + raw.length;
+  }
+  if (last < s.length) parts.push({ t: 'plain', v: s.slice(last) });
+  return parts.map(function(p) {
+    var e = le(p.v);
+    if (p.t === 'bold') return '\\textbf{' + e + '}';
+    if (p.t === 'ital') return '\\textit{' + e + '}';
+    if (p.t === 'ul')   return '\\underline{' + e + '}';
+    return e;
+  }).join('');
+}
+
+/** Wrap textarea selection in before/after markers. */
+function wrapSel(elId, before, after) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var s = el.selectionStart, e = el.selectionEnd;
+  el.value = el.value.slice(0,s) + before + el.value.slice(s,e) + after + el.value.slice(e);
+  el.selectionStart = s + before.length;
+  el.selectionEnd   = e + before.length;
+  el.focus();
+  el.dispatchEvent(new Event('change'));
+}
+
+/** Build rich-toolbar + textarea HTML for a field. */
+function fieldHtml(secId, entryId, f) {
+  var fid = 'f-' + entryId + '-' + f.key;
+  var toolbar = '';
+  if (f.type === 'textarea') {
+    toolbar =
+      '<div class="rich-toolbar">'
+      + '<button type="button" class="rtb" onclick="wrapSel(\'' + fid + '\',\'**\',\'**\')" title="Bold"><b>B</b></button>'
+      + '<button type="button" class="rtb italic-btn" onclick="wrapSel(\'' + fid + '\',\'*\',\'*\')" title="Italic"><i>I</i></button>'
+      + '<button type="button" class="rtb under-btn" onclick="wrapSel(\'' + fid + '\',\'!!\',\'!!\')" title="Underline"><u>U</u></button>'
+      + '<span class="rich-hint">Select text, then click &nbsp;|&nbsp; **bold** &nbsp;*italic* &nbsp;!!underline!!</span>'
+      + '</div>';
+  }
+  var inputEl = f.type === 'textarea'
+    ? '<textarea rows="3" id="' + fid + '" onchange="updateField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\',this.value)"></textarea>'
+    : '<input type="text" id="' + fid + '" onchange="updateField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\',this.value)"/>';
+  return '<div class="entry-field"><label>' + esc(f.label) + '</label>' + toolbar + inputEl + '</div>';
+}
 
 /* ═══════════════════════════════════════════════════════
    SECTION MANAGEMENT
    ═══════════════════════════════════════════════════════ */
-
-/** Add a new section of a given type to state and render it. */
 function addSection(type) {
-  const sec = {
-    id: uid(),
-    type,
-    name: TYPE_LABELS[type] || 'Section',
-    entries: [],
-  };
+  var sec = { id: uid(), type: type, name: TYPE_LABELS[type] || 'Section', entries: [] };
   state.sections.push(sec);
+  if (type === 'pagebreak') { renderPagebreak(sec); return; }
   renderSection(sec);
-  addEntry(sec.id);   // start with one empty entry
+  if (SCHEMAS[type] && SCHEMAS[type].length > 0) addEntry(sec.id);
 }
 
-/** Remove a section by id. */
 function removeSection(secId) {
-  state.sections = state.sections.filter(s => s.id !== secId);
-  document.getElementById(`sec-${secId}`)?.remove();
+  state.sections = state.sections.filter(function(s) { return s.id !== secId; });
+  var el = document.getElementById('sec-' + secId);
+  if (el) el.parentNode.removeChild(el);
 }
 
 /* ═══════════════════════════════════════════════════════
    ENTRY MANAGEMENT
    ═══════════════════════════════════════════════════════ */
-
-/** Add a new empty entry to a section. */
 function addEntry(secId) {
-  const sec = state.sections.find(s => s.id === secId);
+  var sec = state.sections.find(function(s) { return s.id === secId; });
   if (!sec) return;
-  const schema = SCHEMAS[sec.type] || SCHEMAS.generic;
-  const entry = {
-    id: uid(),
-    fields: Object.fromEntries(schema.map(f => [f.key, ''])),
-  };
+  var schema = SCHEMAS[sec.type] || [];
+  var fields = {};
+  schema.forEach(function(f) { fields[f.key] = ''; });
+  var entry = { id: uid(), fields: fields };
   sec.entries.push(entry);
   renderEntry(secId, entry);
 }
 
-/** Remove entry from state and DOM. */
 function removeEntry(secId, entryId) {
-  const sec = state.sections.find(s => s.id === secId);
-  if (sec) sec.entries = sec.entries.filter(e => e.id !== entryId);
-  document.getElementById(`entry-${entryId}`)?.remove();
+  var sec = state.sections.find(function(s) { return s.id === secId; });
+  if (sec) sec.entries = sec.entries.filter(function(e) { return e.id !== entryId; });
+  var el = document.getElementById('entry-' + entryId);
+  if (el) el.parentNode.removeChild(el);
 }
 
-/** Toggle entry body open/closed. */
 function toggleEntry(entryId) {
-  const body   = document.getElementById(`ebody-${entryId}`);
-  const toggle = document.getElementById(`etog-${entryId}`);
-  const open   = body.classList.toggle('open');
-  toggle.classList.toggle('open', open);
+  var body = document.getElementById('ebody-' + entryId);
+  var tog  = document.getElementById('etog-'  + entryId);
+  if (body) body.classList.toggle('open');
+  if (tog)  tog.classList.toggle('open');
+}
+
+function updateField(secId, entryId, key, value) {
+  var sec   = state.sections.find(function(s) { return s.id === secId; });
+  var entry = sec && sec.entries.find(function(e) { return e.id === entryId; });
+  if (!entry) return;
+  entry.fields[key] = value;
+  var schema   = SCHEMAS[sec.type] || [];
+  var firstKey = schema[0] && schema[0].key;
+  if (firstKey === key) {
+    var el = document.getElementById('epreview-' + entryId);
+    if (el) el.textContent = value || '(empty)';
+  }
+}
+
+/** After DOM render, push actual values into inputs/textareas. */
+function setEntryValues(entry, sec) {
+  var schema = SCHEMAS[sec.type] || [];
+  schema.forEach(function(f) {
+    var el = document.getElementById('f-' + entry.id + '-' + f.key);
+    if (el && entry.fields[f.key] !== undefined) el.value = entry.fields[f.key];
+  });
+  var firstKey = schema[0] && schema[0].key;
+  if (firstKey) {
+    var prev = document.getElementById('epreview-' + entry.id);
+    if (prev) prev.textContent = entry.fields[firstKey] || '(empty)';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
-   RENDER — SECTION
+   RENDER
    ═══════════════════════════════════════════════════════ */
-function renderSection(sec) {
-  const list = document.getElementById('sections-list');
-
-  const card = document.createElement('div');
-  card.className = 'section-card';
-  card.id = `sec-${sec.id}`;
-  card.draggable = true;
-  card.dataset.secId = sec.id;
-
-  card.innerHTML = `
-    <div class="section-header">
-      <span class="section-drag-handle" title="Drag to reorder">⠿</span>
-      <input class="section-name" type="text" value="${esc(sec.name)}"
-             onchange="updateSectionName('${sec.id}', this.value)"
-             title="Click to rename"/>
-      <span class="section-type-label">[${sec.type}]</span>
-      <div class="section-actions">
-        <button class="btn sm" onclick="addEntry('${sec.id}')">+ Entry</button>
-        <button class="btn sm danger" onclick="removeSection('${sec.id}')">✕</button>
-      </div>
-    </div>
-    <div class="section-body">
-      <div class="entries-list" id="entries-${sec.id}"></div>
-      <div class="add-entry-row">
-        <button class="btn sm" onclick="addEntry('${sec.id}')">+ Add entry</button>
-      </div>
-    </div>
-  `;
-
+function renderPagebreak(sec) {
+  var list = document.getElementById('sections-list');
+  var card = document.createElement('div');
+  card.className       = 'pagebreak-card';
+  card.id              = 'sec-' + sec.id;
+  card.draggable       = true;
+  card.dataset.secId   = sec.id;
+  card.innerHTML =
+    '<div class="pagebreak-header">'
+    + '<span class="section-drag-handle" title="Drag to reorder">&#10783;</span>'
+    + '<span class="pagebreak-label">&#8629; PAGE BREAK</span>'
+    + '<div class="section-actions">'
+    + '<button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button>'
+    + '</div></div>';
   list.appendChild(card);
   setupSectionDrag(card);
 }
 
-/** Update section name in state. */
+function renderSection(sec) {
+  var list = document.getElementById('sections-list');
+  var card = document.createElement('div');
+  card.className     = 'section-card';
+  card.id            = 'sec-' + sec.id;
+  card.draggable     = true;
+  card.dataset.secId = sec.id;
+  card.innerHTML =
+    '<div class="section-header">'
+    + '<span class="section-drag-handle" title="Drag to reorder">&#10783;</span>'
+    + '<input class="section-name" type="text" value="' + esc(sec.name) + '"'
+    + ' onchange="updateSectionName(\'' + sec.id + '\',this.value)" title="Click to rename"/>'
+    + '<span class="section-type-label">[' + sec.type + ']</span>'
+    + '<div class="section-actions">'
+    + '<button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Entry</button>'
+    + '<button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button>'
+    + '</div></div>'
+    + '<div class="section-body">'
+    + '<div class="entries-list" id="entries-' + sec.id + '"></div>'
+    + '<div class="add-entry-row"><button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Add entry</button></div>'
+    + '</div>';
+  list.appendChild(card);
+  setupSectionDrag(card);
+}
+
 function updateSectionName(secId, val) {
-  const sec = state.sections.find(s => s.id === secId);
+  var sec = state.sections.find(function(s) { return s.id === secId; });
   if (sec) sec.name = val;
 }
 
-/* ═══════════════════════════════════════════════════════
-   RENDER — ENTRY
-   ═══════════════════════════════════════════════════════ */
 function renderEntry(secId, entry) {
-  const sec    = state.sections.find(s => s.id === secId);
-  const schema = SCHEMAS[sec.type] || SCHEMAS.generic;
-  const list   = document.getElementById(`entries-${secId}`);
+  var sec    = state.sections.find(function(s) { return s.id === secId; });
+  var schema = SCHEMAS[sec.type] || [];
+  var list   = document.getElementById('entries-' + secId);
 
-  const card = document.createElement('div');
-  card.className = 'entry-card';
-  card.id = `entry-${entry.id}`;
-  card.draggable = true;
+  var card = document.createElement('div');
+  card.className       = 'entry-card';
+  card.id              = 'entry-' + entry.id;
+  card.draggable       = true;
   card.dataset.entryId = entry.id;
   card.dataset.secId   = secId;
 
-  const fieldsHtml = schema.map(f => `
-    <div class="entry-field">
-      <label>${esc(f.label)}</label>
-      ${f.type === 'textarea'
-        ? `<textarea rows="3"
-             data-sec="${secId}" data-entry="${entry.id}" data-key="${f.key}"
-             onchange="updateField('${secId}','${entry.id}','${f.key}',this.value)"
-             >${esc(entry.fields[f.key] || '')}</textarea>`
-        : `<input type="text"
-             data-sec="${secId}" data-entry="${entry.id}" data-key="${f.key}"
-             value="${esc(entry.fields[f.key] || '')}"
-             onchange="updateField('${secId}','${entry.id}','${f.key}',this.value)"/>`
-      }
-    </div>`).join('');
+  var fieldsHtml = schema.map(function(f) { return fieldHtml(secId, entry.id, f); }).join('');
+  var firstKey   = schema[0] && schema[0].key;
+  var preview    = (firstKey && entry.fields[firstKey]) || '(empty)';
 
-  const firstKey = schema[0]?.key || 'content';
-  const preview  = entry.fields[firstKey] || '(empty)';
-
-  card.innerHTML = `
-    <div class="entry-header" onclick="toggleEntry('${entry.id}')">
-      <span class="entry-drag-handle" title="Drag to reorder"
-            onclick="event.stopPropagation()">⠿</span>
-      <span class="entry-title-preview" id="epreview-${entry.id}">${esc(preview)}</span>
-      <span class="entry-toggle" id="etog-${entry.id}">▾</span>
-    </div>
-    <div class="entry-body open" id="ebody-${entry.id}">
-      <div class="entry-fields">${fieldsHtml}</div>
-    </div>
-    <div class="entry-footer">
-      <button class="btn sm danger" onclick="removeEntry('${secId}','${entry.id}')">✕ Remove</button>
-    </div>
-  `;
+  card.innerHTML =
+    '<div class="entry-header" onclick="toggleEntry(\'' + entry.id + '\')">'
+    + '<span class="entry-drag-handle" onclick="event.stopPropagation()">&#10783;</span>'
+    + '<span class="entry-title-preview" id="epreview-' + entry.id + '">' + esc(preview) + '</span>'
+    + '<span class="entry-toggle open" id="etog-' + entry.id + '">&#9662;</span>'
+    + '</div>'
+    + '<div class="entry-body open" id="ebody-' + entry.id + '">'
+    + '<div class="entry-fields">' + fieldsHtml + '</div>'
+    + '</div>'
+    + '<div class="entry-footer">'
+    + '<button class="btn sm danger" onclick="removeEntry(\'' + secId + '\',\'' + entry.id + '\')">&#10005; Remove</button>'
+    + '</div>';
 
   list.appendChild(card);
   setupEntryDrag(card);
-
-  // mark first entry body as open by default
-  document.getElementById(`etog-${entry.id}`)?.classList.add('open');
-}
-
-/** Update a field value in state and refresh the preview label. */
-function updateField(secId, entryId, key, value) {
-  const sec   = state.sections.find(s => s.id === secId);
-  const entry = sec?.entries.find(e => e.id === entryId);
-  if (!entry) return;
-  entry.fields[key] = value;
-
-  // refresh preview with first field
-  const schema   = SCHEMAS[sec.type] || SCHEMAS.generic;
-  const firstKey = schema[0]?.key || 'content';
-  const el       = document.getElementById(`epreview-${entryId}`);
-  if (el) el.textContent = entry.fields[firstKey] || '(empty)';
 }
 
 /* ═══════════════════════════════════════════════════════
    DRAG & DROP — SECTIONS
    ═══════════════════════════════════════════════════════ */
-let dragSec = null;
+var dragSec = null;
 
 function setupSectionDrag(card) {
-  const handle = card.querySelector('.section-drag-handle');
-  handle.addEventListener('mousedown', () => { card.draggable = true; });
-
-  card.addEventListener('dragstart', e => {
-    dragSec = card;
-    e.dataTransfer.effectAllowed = 'move';
-    setTimeout(() => card.classList.add('dragging'), 0);
+  card.addEventListener('dragstart', function(e) {
+    dragSec = card; e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
+    setTimeout(function() { card.classList.add('dragging'); }, 0);
   });
-  card.addEventListener('dragend', () => {
+  card.addEventListener('dragend', function() {
     card.classList.remove('dragging');
-    document.querySelectorAll('.section-card').forEach(c => c.classList.remove('drag-over'));
-    dragSec = null;
-    syncSectionOrder();
+    document.querySelectorAll('.section-card,.pagebreak-card').forEach(function(c) { c.classList.remove('drag-over'); });
+    dragSec = null; syncSectionOrder();
   });
-  card.addEventListener('dragover', e => {
+  card.addEventListener('dragover', function(e) {
     if (!dragSec || dragSec === card) return;
-    e.preventDefault();
-    card.classList.add('drag-over');
+    e.preventDefault(); card.classList.add('drag-over');
   });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-  card.addEventListener('drop', e => {
-    e.preventDefault();
-    card.classList.remove('drag-over');
+  card.addEventListener('dragleave', function() { card.classList.remove('drag-over'); });
+  card.addEventListener('drop', function(e) {
+    e.preventDefault(); card.classList.remove('drag-over');
     if (!dragSec || dragSec === card) return;
-    const list = document.getElementById('sections-list');
-    const cards = [...list.querySelectorAll('.section-card')];
-    const fromIdx = cards.indexOf(dragSec);
-    const toIdx   = cards.indexOf(card);
-    if (fromIdx < toIdx) list.insertBefore(dragSec, card.nextSibling);
+    var list = document.getElementById('sections-list');
+    var cards = Array.from(list.children);
+    var fi = cards.indexOf(dragSec), ti = cards.indexOf(card);
+    if (fi < ti) list.insertBefore(dragSec, card.nextSibling);
     else list.insertBefore(dragSec, card);
   });
 }
 
-/** Sync state.sections order from DOM order. */
 function syncSectionOrder() {
-  const cards = [...document.querySelectorAll('#sections-list .section-card')];
-  const byId  = Object.fromEntries(state.sections.map(s => [s.id, s]));
-  state.sections = cards.map(c => byId[c.dataset.secId]).filter(Boolean);
+  var cards = Array.from(document.getElementById('sections-list').children);
+  var byId  = {};
+  state.sections.forEach(function(s) { byId[s.id] = s; });
+  state.sections = cards.map(function(c) { return byId[c.dataset.secId]; }).filter(Boolean);
 }
 
 /* ═══════════════════════════════════════════════════════
    DRAG & DROP — ENTRIES
    ═══════════════════════════════════════════════════════ */
-let dragEntry = null;
+var dragEntry = null;
 
 function setupEntryDrag(card) {
-  const handle = card.querySelector('.entry-drag-handle');
-  handle.addEventListener('mousedown', () => { card.draggable = true; });
-
-  card.addEventListener('dragstart', e => {
-    dragEntry = card;
-    e.dataTransfer.effectAllowed = 'move';
+  card.addEventListener('dragstart', function(e) {
+    dragEntry = card; e.dataTransfer.effectAllowed = 'move';
     e.stopPropagation();
-    setTimeout(() => card.classList.add('dragging'), 0);
+    setTimeout(function() { card.classList.add('dragging'); }, 0);
   });
-  card.addEventListener('dragend', () => {
+  card.addEventListener('dragend', function() {
     card.classList.remove('dragging');
-    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
-    dragEntry = null;
-    syncEntryOrders();
+    document.querySelectorAll('.entry-card').forEach(function(c) { c.classList.remove('drag-over'); });
+    dragEntry = null; syncEntryOrders();
   });
-  card.addEventListener('dragover', e => {
+  card.addEventListener('dragover', function(e) {
     if (!dragEntry || dragEntry === card) return;
     if (dragEntry.dataset.secId !== card.dataset.secId) return;
-    e.preventDefault(); e.stopPropagation();
-    card.classList.add('drag-over');
+    e.preventDefault(); e.stopPropagation(); card.classList.add('drag-over');
   });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-  card.addEventListener('drop', e => {
-    e.preventDefault(); e.stopPropagation();
-    card.classList.remove('drag-over');
+  card.addEventListener('dragleave', function() { card.classList.remove('drag-over'); });
+  card.addEventListener('drop', function(e) {
+    e.preventDefault(); e.stopPropagation(); card.classList.remove('drag-over');
     if (!dragEntry || dragEntry === card) return;
     if (dragEntry.dataset.secId !== card.dataset.secId) return;
-    const list = document.getElementById(`entries-${card.dataset.secId}`);
-    const cards = [...list.querySelectorAll('.entry-card')];
-    const fromIdx = cards.indexOf(dragEntry);
-    const toIdx   = cards.indexOf(card);
-    if (fromIdx < toIdx) list.insertBefore(dragEntry, card.nextSibling);
+    var list  = document.getElementById('entries-' + card.dataset.secId);
+    var cards = Array.from(list.querySelectorAll('.entry-card'));
+    var fi = cards.indexOf(dragEntry), ti = cards.indexOf(card);
+    if (fi < ti) list.insertBefore(dragEntry, card.nextSibling);
     else list.insertBefore(dragEntry, card);
   });
 }
 
-/** Sync entries order within each section from DOM. */
 function syncEntryOrders() {
-  state.sections.forEach(sec => {
-    const list  = document.getElementById(`entries-${sec.id}`);
+  state.sections.forEach(function(sec) {
+    var list = document.getElementById('entries-' + sec.id);
     if (!list) return;
-    const cards = [...list.querySelectorAll('.entry-card')];
-    const byId  = Object.fromEntries(sec.entries.map(e => [e.id, e]));
-    sec.entries = cards.map(c => byId[c.dataset.entryId]).filter(Boolean);
+    var byId = {};
+    sec.entries.forEach(function(e) { byId[e.id] = e; });
+    sec.entries = Array.from(list.querySelectorAll('.entry-card'))
+      .map(function(c) { return byId[c.dataset.entryId]; }).filter(Boolean);
   });
 }
+
+function syncAll() { syncEntryOrders(); syncSectionOrder(); }
 
 /* ═══════════════════════════════════════════════════════
    LATEX GENERATION
    ═══════════════════════════════════════════════════════ */
-
-/** Escape special LaTeX characters. */
-function latexEsc(s) {
-  if (!s) return '';
-  return s
-    .replace(/\\/g, '\\textbackslash{}')
-    .replace(/&/g, '\\&')
-    .replace(/%/g, '\\%')
-    .replace(/\$/g, '\\$')
-    .replace(/#/g, '\\#')
-    .replace(/_/g, '\\_')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/~/g, '\\textasciitilde{}')
-    .replace(/\^/g, '\\textasciicircum{}');
-}
-
-const le = latexEsc;
-
-/** Read personal info from DOM inputs. */
 function getPI() {
   return {
     name:     document.getElementById('pi-name').value.trim(),
@@ -861,26 +700,24 @@ function getPI() {
     email:    document.getElementById('pi-email').value.trim(),
     website:  document.getElementById('pi-website').value.trim(),
     github:   document.getElementById('pi-github').value.trim(),
-    linkedin: document.getElementById('pi-linkedin').value.trim(),
+    linkedin: document.getElementById('pi-linkedin').value.trim()
   };
 }
 
-/** Build the full LaTeX source from state. */
 function buildLatex() {
-  const pi = getPI();
+  var pi = getPI();
 
-  // Reusable column spec with RaggedLeft — built as plain string to avoid
-  // template-literal backslash interpretation issues (\R, \a are not escape seqs)
-  const colSpec = '>{\RaggedLeft\arraybackslash}';                   // eslint-disable-line
-  const tabCols = '@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}' + colSpec + 'p{0.28\\textwidth}@{}';
-  const tabColsLang = '@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}';
+  // !! CRITICAL: build RaggedLeft column spec via plain string concatenation.
+  // Template literals or string literals with \R, \a would silently drop the
+  // backslash in JS non-strict mode (\R -> R, \a -> a).  Using \\ in a
+  // regular string gives us the literal backslash character we need.
+  var RL      = '\\RaggedLeft\\arraybackslash';
+  var colSpec = '>{' + RL + '}';
+  var tabCols = '@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}' + colSpec + 'p{0.28\\textwidth}@{}';
 
-  // preamble — use string concatenation so backslashes are never misinterpreted
-  let tex = '';
+  var tex = '';
   tex += '\\documentclass[10.4pt,a4paper]{article}\n\n';
-  tex += '% -------------------------------------------------\n';
-  tex += '% Packages\n';
-  tex += '% -------------------------------------------------\n';
+  tex += '% -------------------------------------------------\n% Packages\n% -------------------------------------------------\n';
   tex += '\\usepackage[a4paper,margin=1.4cm]{geometry}\n';
   tex += '\\usepackage[T1]{fontenc}\n';
   tex += '\\usepackage[utf8]{inputenc}\n';
@@ -897,66 +734,27 @@ function buildLatex() {
   tex += '\\usepackage{parskip}\n';
   tex += '\\usepackage{multicol}\n';
   tex += '\\usepackage{needspace}\n\n';
-
-  tex += '% -------------------------------------------------\n';
-  tex += '% General layout\n';
-  tex += '% -------------------------------------------------\n';
+  tex += '% -------------------------------------------------\n% General layout\n% -------------------------------------------------\n';
   tex += '\\setlength{\\parindent}{0pt}\n';
   tex += '\\setlength{\\parskip}{0pt}\n';
   tex += '\\setlength{\\tabcolsep}{0pt}\n';
-  tex += '\\linespread{1.02}\n';
-  tex += '\\pagestyle{empty}\n';
-  tex += '\\urlstyle{same}\n\n';
-  tex += '\\setlist[itemize]{\n';
-  tex += '    leftmargin=1.1em,\n';
-  tex += '    itemsep=0.05em,\n';
-  tex += '    topsep=0.05em,\n';
-  tex += '    parsep=0em,\n';
-  tex += '    partopsep=0em\n';
-  tex += '}\n\n';
-  tex += '\\titleformat{\\section}\n';
-  tex += '  {\\Large\\bfseries}\n';
-  tex += '  {}\n';
-  tex += '  {0pt}\n';
-  tex += '  {\\MakeUppercase}\n';
-  tex += '  [\\vspace{0.15em}\\titlerule]\n\n';
+  tex += '\\linespread{1.02}\n\\pagestyle{empty}\n\\urlstyle{same}\n\n';
+  tex += '\\setlist[itemize]{\n    leftmargin=1.1em,\n    itemsep=0.05em,\n    topsep=0.05em,\n    parsep=0em,\n    partopsep=0em\n}\n\n';
+  tex += '\\titleformat{\\section}\n  {\\Large\\bfseries}\n  {}\n  {0pt}\n  {\\MakeUppercase}\n  [\\vspace{0.15em}\\titlerule]\n\n';
   tex += '\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}\n\n';
-
-  tex += '% -------------------------------------------------\n';
-  tex += '% Helpers\n';
-  tex += '% -------------------------------------------------\n';
-  tex += '\\newcommand{\\cvheadername}[1]{%\n';
-  tex += '    {\\fontsize{25}{28}\\selectfont\\bfseries #1\\par}\n';
-  tex += '}\n\n';
-  tex += '\\newcommand{\\cvheadersubtitle}[1]{%\n';
-  tex += '    \\vspace{0.35em}\n';
-  tex += '    {\\fontsize{15}{18}\\selectfont\\itshape #1\\par}\n';
-  tex += '}\n\n';
-  tex += '\\newcommand{\\contactline}[1]{%\n';
-  tex += '    \\vspace{0.8em}\n';
-  tex += '    {\\normalsize #1\\par}\n';
-  tex += '}\n\n';
-
+  tex += '% -------------------------------------------------\n% Helpers\n% -------------------------------------------------\n';
+  tex += '\\newcommand{\\cvheadername}[1]{%\n    {\\fontsize{25}{28}\\selectfont\\bfseries #1\\par}\n}\n\n';
+  tex += '\\newcommand{\\cvheadersubtitle}[1]{%\n    \\vspace{0.35em}\n    {\\fontsize{15}{18}\\selectfont\\itshape #1\\par}\n}\n\n';
+  tex += '\\newcommand{\\contactline}[1]{%\n    \\vspace{0.8em}\n    {\\normalsize #1\\par}\n}\n\n';
   // eduentry
   tex += '\\newcommand{\\eduentry}[5]{%\n';
   tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
   tex += '        {\\large\\bfseries #1} & {\\large #4} \\\\\n';
   tex += '        {\\large\\itshape #2} & {\\large #5} \\\\\n';
-  tex += '        \\if\\relax\\detokenize{#3}\\relax\n';
-  tex += '        \\else\n';
-  tex += '        {\\large #3} & \\\\\n';
-  tex += '        \\fi\n';
-  tex += '    \\end{tabular*}\n';
-  tex += '    \\vspace{0.15em}\n';
-  tex += '}\n\n';
-
+  tex += '        \\if\\relax\\detokenize{#3}\\relax\n        \\else\n        {\\large #3} & \\\\\n        \\fi\n';
+  tex += '    \\end{tabular*}\n    \\vspace{0.15em}\n}\n\n';
   // pubentry
-  tex += '\\newcommand{\\pubentry}[2]{%\n';
-  tex += '    {\\large\\bfseries #1\\par}\n';
-  tex += '    {\\large\\itshape #2\\par}\n';
-  tex += '    \\vspace{0.45em}\n';
-  tex += '}\n\n';
-
+  tex += '\\newcommand{\\pubentry}[2]{%\n    {\\large\\bfseries #1\\par}\n    {\\large\\itshape #2\\par}\n    \\vspace{0.45em}\n}\n\n';
   // experienceentry
   tex += '\\newcommand{\\experienceentry}[6]{%\n';
   tex += '    \\Needspace{10\\baselineskip}\n';
@@ -965,12 +763,8 @@ function buildLatex() {
   tex += '        {\\large\\itshape #2} & {\\large #4} \\\\\n';
   tex += '    \\end{tabular*}\n';
   tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
-  tex += '        \\item {\\large #5}\n';
-  tex += '    \\end{itemize}\n';
-  tex += '    {\\large\\itshape #6\\par}\n';
-  tex += '    \\vspace{0.2em}\n';
-  tex += '}\n\n';
-
+  tex += '        \\item {\\large #5}\n    \\end{itemize}\n';
+  tex += '    {\\large\\itshape #6\\par}\n    \\vspace{0.2em}\n}\n\n';
   // experienceentrynocon
   tex += '\\newcommand{\\experienceentrynocon}[5]{%\n';
   tex += '    \\Needspace{9\\baselineskip}\n';
@@ -979,35 +773,19 @@ function buildLatex() {
   tex += '        {\\large\\itshape #2} & {\\large #4} \\\\\n';
   tex += '    \\end{tabular*}\n';
   tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
-  tex += '        \\item {\\large #5}\n';
-  tex += '    \\end{itemize}\n';
-  tex += '    \\vspace{0.2em}\n';
-  tex += '}\n\n';
-
+  tex += '        \\item {\\large #5}\n    \\end{itemize}\n    \\vspace{0.2em}\n}\n\n';
   // projectentry
   tex += '\\newcommand{\\projectentry}[3]{%\n';
   tex += '    {\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}\n';
   tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
-  tex += '        \\item {\\large #2}\n';
-  tex += '    \\end{itemize}\n';
-  tex += '    \\vspace{0.1em}\n';
-  tex += '}\n\n';
-
+  tex += '        \\item {\\large #2}\n    \\end{itemize}\n    \\vspace{0.1em}\n}\n\n';
   // skillblock
   tex += '\\newcommand{\\skillblock}[2]{%\n';
   tex += '    {\\large\\bfseries #1\\par}\n';
-  tex += '    \\begin{itemize}\n';
-  tex += '        \\item {\\large #2}\n';
-  tex += '    \\end{itemize}\n';
-  tex += '    \\vspace{0.35em}\n';
-  tex += '}\n\n';
+  tex += '    \\begin{itemize}\n        \\item {\\large #2}\n    \\end{itemize}\n    \\vspace{0.35em}\n}\n\n';
 
   tex += '\\begin{document}\n\n';
-
-  // header
-  tex += '% -------------------------------------------------\n';
-  tex += '% Header\n';
-  tex += '% -------------------------------------------------\n';
+  tex += '% -------------------------------------------------\n% Header\n% -------------------------------------------------\n';
   tex += '\\begin{center}\n';
   tex += '    \\cvheadername{' + le(pi.name) + '}\n';
   tex += '    \\cvheadersubtitle{' + le(pi.title) + '}\n\n';
@@ -1019,62 +797,46 @@ function buildLatex() {
   if (pi.linkedin) tex += '    \\contactline{\n        \\faLinkedin\\ \\href{' + pi.linkedin + '}{' + le(pi.linkedin) + '}\n    }\n';
   tex += '\\end{center}\n';
 
-  // sections
-  state.sections.forEach(sec => {
-    tex += `\n% -------------------------------------------------\n`;
-    tex += `% ${sec.name.toUpperCase()}\n`;
-    tex += `% -------------------------------------------------\n`;
-    tex += `\\section{${le(sec.name)}}\n\n`;
+  state.sections.forEach(function(sec) {
+    if (sec.type === 'pagebreak') { tex += '\n\\newpage\n'; return; }
+    tex += '\n% -------------------------------------------------\n';
+    tex += '% ' + sec.name.toUpperCase() + '\n';
+    tex += '% -------------------------------------------------\n';
+    if (sec.name.trim()) tex += '\\section{' + le(sec.name) + '}\n\n';
 
-    sec.entries.forEach(entry => {
-      const f = entry.fields;
+    sec.entries.forEach(function(entry) {
+      var f  = entry.fields;
+      var rl = function(v) { return richToLatex(v || ''); };
+
       switch (sec.type) {
         case 'education':
-          tex += '\\eduentry\n';
-          tex += '{' + le(f.degree) + '}\n';
-          tex += '{' + le(f.institution) + '}\n';
-          tex += '{' + le(f.note) + '}\n';
-          tex += '{' + le(f.dateRange) + '}\n';
-          tex += '{' + le(f.location) + '}\n\n';
+          tex += '\\eduentry\n{' + rl(f.degree) + '}\n{' + rl(f.institution) + '}\n'
+               + '{' + rl(f.note) + '}\n{' + le(f.dateRange) + '}\n{' + le(f.location) + '}\n\n';
           break;
         case 'publication':
-          tex += '\\pubentry\n';
-          tex += '{' + le(f.title) + '}\n';
-          tex += '{' + le(f.venue) + '}\n\n';
+          tex += '\\pubentry\n{' + rl(f.title) + '}\n{' + rl(f.venue) + '}\n\n';
           break;
         case 'experience':
           if (f.contact && f.contact.trim()) {
-            tex += '\\experienceentry\n';
-            tex += '{' + le(f.role) + '}\n';
-            tex += '{' + le(f.org) + '}\n';
-            tex += '{' + le(f.dateRange) + '}\n';
-            tex += '{' + le(f.location) + '}\n';
-            tex += '{' + le(f.description) + '}\n';
-            tex += '{Contact: ' + le(f.contact) + '}\n\n';
+            tex += '\\experienceentry\n{' + rl(f.role) + '}\n{' + rl(f.org) + '}\n'
+                 + '{' + le(f.dateRange) + '}\n{' + le(f.location) + '}\n'
+                 + '{' + rl(f.description) + '}\n{Contact: ' + rl(f.contact) + '}\n\n';
           } else {
-            tex += '\\experienceentrynocon\n';
-            tex += '{' + le(f.role) + '}\n';
-            tex += '{' + le(f.org) + '}\n';
-            tex += '{' + le(f.dateRange) + '}\n';
-            tex += '{' + le(f.location) + '}\n';
-            tex += '{' + le(f.description) + '}\n\n';
+            tex += '\\experienceentrynocon\n{' + rl(f.role) + '}\n{' + rl(f.org) + '}\n'
+                 + '{' + le(f.dateRange) + '}\n{' + le(f.location) + '}\n'
+                 + '{' + rl(f.description) + '}\n\n';
           }
           break;
         case 'project':
-          tex += '\\projectentry\n';
-          tex += '{' + le(f.title) + '}\n';
-          tex += '{' + le(f.description) + '}\n';
-          tex += '{' + (f.url || '#') + '}\n\n';
+          tex += '\\projectentry\n{' + rl(f.title) + '}\n{' + rl(f.description) + '}\n{' + (f.url||'#') + '}\n\n';
           break;
         case 'skills':
-          tex += '\\skillblock\n';
-          tex += '{' + le(f.category) + '}\n';
-          tex += '{' + le(f.items) + '}\n\n';
+          tex += '\\skillblock\n{' + rl(f.category) + '}\n{' + rl(f.items) + '}\n\n';
           break;
         case 'languages':
-          tex += '{\\large\\bfseries ' + le(f.language) + '\\par}\n';
-          tex += '{\\large ' + le(f.level);
-          if (f.certs && f.certs.trim()) tex += ' \\\\\n{\\large ' + le(f.certs);
+          tex += '{\\large\\bfseries ' + rl(f.language) + '\\par}\n';
+          tex += '{\\large ' + rl(f.level);
+          if (f.certs && f.certs.trim()) tex += '\\\\\n{\\large ' + rl(f.certs);
           tex += '\\par}\n\\vspace{0.6em}\n\n';
           break;
         case 'generic':
@@ -1092,91 +854,114 @@ function buildLatex() {
    MODALS
    ═══════════════════════════════════════════════════════ */
 function openLatexModal() {
-  syncEntryOrders();
-  syncSectionOrder();
-  const code = buildLatex();
-  document.getElementById('latex-code').textContent = code;
+  syncAll();
+  document.getElementById('latex-code').textContent = buildLatex();
   document.getElementById('latex-modal').classList.add('open');
 }
 
 function openPdfModal() {
-  syncEntryOrders();
-  syncSectionOrder();
+  syncAll();
   pdfBlob = null;
-  document.getElementById('pdf-frame').style.display = 'none';
-  document.getElementById('pdf-frame').src = '';
-  document.getElementById('btn-dl-pdf').style.display = 'none';
-  document.getElementById('pdf-status').innerHTML = 'Compiling…&nbsp;<span class="spinner"></span>';
+  document.getElementById('pdf-frame').style.display   = 'none';
+  document.getElementById('pdf-frame').src             = '';
+  document.getElementById('btn-dl-pdf').style.display  = 'none';
+  document.getElementById('btn-overleaf').style.display= 'none';
+  document.getElementById('debug-toggle').style.display= 'none';
+  document.getElementById('debug-log').textContent     = '';
+  document.getElementById('debug-log').classList.remove('visible');
+  document.getElementById('pdf-status').innerHTML      =
+    'Compiling via texlive.net\u2026&nbsp;<span class="spinner"></span>';
   document.getElementById('pdf-modal').classList.add('open');
   compilePdf();
 }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// Close on backdrop click
-document.querySelectorAll('.modal-backdrop').forEach(bd => {
-  bd.addEventListener('click', e => { if (e.target === bd) closeModal(bd.id); });
+document.querySelectorAll('.modal-backdrop').forEach(function(bd) {
+  bd.addEventListener('click', function(e) { if (e.target === bd) closeModal(bd.id); });
 });
 
-/* ═══════════════════════════════════════════════════════
-   COPY / DOWNLOAD LATEX
-   ═══════════════════════════════════════════════════════ */
-function copyLatex() {
-  const code = document.getElementById('latex-code').textContent;
-  navigator.clipboard.writeText(code).then(() => alert('Copied to clipboard!'));
-}
-
-function downloadLatex() {
-  const code = document.getElementById('latex-code').textContent;
-  const blob = new Blob([code], { type: 'text/plain' });
-  triggerDownload(URL.createObjectURL(blob), 'cv.tex');
+function toggleDebug() {
+  var log = document.getElementById('debug-log');
+  var btn = document.getElementById('debug-toggle');
+  var open = log.classList.toggle('visible');
+  btn.textContent = (open ? '\u25BC' : '\u25B6') + ' Debug log';
 }
 
 /* ═══════════════════════════════════════════════════════
-   PDF COMPILATION (texlive.net)
+   PDF COMPILATION
    ═══════════════════════════════════════════════════════ */
+var debugLines = [];
+function dbg(msg) {
+  debugLines.push(msg);
+  document.getElementById('debug-log').textContent = debugLines.join('\n');
+}
+
 async function compilePdf() {
-  const tex = buildLatex();
-  const status = document.getElementById('pdf-status');
+  var tex    = buildLatex();
+  var status = document.getElementById('pdf-status');
+  debugLines = [];
+  dbg('[1] Building FormData for texlive.net ...');
 
-  // texlive.net: POST multipart, engine=pdflatex
-  const formData = new FormData();
+  var formData = new FormData();
   formData.append('filecontents[]', new Blob([tex], { type: 'text/plain' }), 'cv.tex');
   formData.append('filename[]', 'cv.tex');
   formData.append('engine', 'pdflatex');
   formData.append('return', 'pdf');
 
   try {
-    const res = await fetch('https://texlive.net/cgi-bin/latexcgi', {
-      method: 'POST',
-      body: formData,
+    dbg('[2] POST https://texlive.net/cgi-bin/latexcgi');
+    var res = await fetch('https://texlive.net/cgi-bin/latexcgi', {
+      method: 'POST', body: formData
     });
+    dbg('[3] HTTP ' + res.status + ' ' + res.statusText);
+    var ct = res.headers.get('content-type') || '';
+    dbg('[4] Content-Type: ' + ct);
 
-    const contentType = res.headers.get('content-type') || '';
-
-    if (contentType.includes('pdf')) {
+    if (ct.includes('pdf')) {
       pdfBlob = await res.blob();
-      const url = URL.createObjectURL(pdfBlob);
-      const frame = document.getElementById('pdf-frame');
-      frame.src = url;
-      frame.style.display = 'block';
-      document.getElementById('btn-dl-pdf').style.display = 'inline-flex';
+      var url = URL.createObjectURL(pdfBlob);
+      var frame = document.getElementById('pdf-frame');
+      frame.src = url; frame.style.display = 'block';
+      document.getElementById('btn-dl-pdf').style.display   = 'inline-flex';
+      document.getElementById('debug-toggle').style.display = 'inline';
       status.textContent = '';
+      dbg('[5] Success — ' + (pdfBlob.size / 1024).toFixed(1) + ' KB');
     } else {
-      const log = await res.text();
-      // extract first LaTeX error line
-      const errLine = log.split('\n').find(l => l.startsWith('!')) || 'Compilation failed.';
+      var log = await res.text();
+      dbg('[5] Non-PDF response. Excerpt:\n' + log.slice(0, 900));
+      var errLine = log.split('\n').find(function(l) { return l.startsWith('!'); })
+                   || 'Compilation failed — check debug log.';
       throw new Error(errLine);
     }
-  } catch (err) {
+  } catch(err) {
+    dbg('[ERR] ' + err.name + ': ' + err.message);
+    document.getElementById('debug-toggle').style.display  = 'inline';
+    document.getElementById('btn-overleaf').style.display  = 'inline-flex';
     if (err.name === 'TypeError') {
-      status.innerHTML = `<span style="color:var(--danger)">&#9888; Could not reach texlive.net. Try downloading the .tex and compiling on Overleaf.</span>`;
+      status.innerHTML =
+        '<span style="color:var(--danger)">&#9888; Cannot reach texlive.net (network / CORS). '
+        + 'Use <b>Open in Overleaf</b> to compile online, or download the .tex.</span>';
     } else {
-      status.innerHTML = `<span style="color:var(--danger)">&#9888; ${esc(err.message)}</span>`;
+      status.innerHTML =
+        '<span style="color:var(--danger)">&#9888; ' + esc(err.message) + '</span>';
     }
   }
+}
+
+/** POST the .tex directly to Overleaf — opens a new project with it pre-loaded. */
+function openOverleaf() {
+  var tex  = buildLatex();
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://www.overleaf.com/docs';
+  form.target = '_blank';
+  var inp = document.createElement('input');
+  inp.name = 'snip'; inp.value = tex;
+  form.appendChild(inp);
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
 }
 
 function downloadPdf() {
@@ -1184,8 +969,18 @@ function downloadPdf() {
   triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf');
 }
 
+function copyLatex() {
+  navigator.clipboard.writeText(document.getElementById('latex-code').textContent)
+    .then(function() { alert('Copied!'); });
+}
+
+function downloadLatex() {
+  var blob = new Blob([document.getElementById('latex-code').textContent], { type: 'text/plain' });
+  triggerDownload(URL.createObjectURL(blob), 'cv.tex');
+}
+
 function triggerDownload(url, filename) {
-  const a = document.createElement('a');
+  var a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
@@ -1197,7 +992,6 @@ function triggerDownload(url, filename) {
 document.getElementById('btn-load-demo').addEventListener('click', loadDemo);
 
 function loadDemo() {
-  // personal info
   document.getElementById('pi-name').value     = 'Baptiste PRAS';
   document.getElementById('pi-title').value    = "Master's student in Artificial Intelligence";
   document.getElementById('pi-email').value    = 'baptiste.pras@universite-paris-saclay.fr';
@@ -1208,134 +1002,126 @@ function loadDemo() {
   state.sections = [];
   document.getElementById('sections-list').innerHTML = '';
 
-  // helper: create section + push entries from array of field objects
-  function mkSection(type, name, rows) {
-    const sec = { id: uid(), type, name, entries: [] };
+  function mk(type, name, rows) {
+    var sec = { id: uid(), type: type, name: name, entries: [] };
     state.sections.push(sec);
+    if (type === 'pagebreak') { renderPagebreak(sec); return; }
     renderSection(sec);
-    rows.forEach(fields => {
-      const e = { id: uid(), fields };
+    rows.forEach(function(fields) {
+      var e = { id: uid(), fields: fields };
       sec.entries.push(e);
       renderEntry(sec.id, e);
+      setEntryValues(e, sec);
     });
   }
 
-  mkSection('education', 'Education', [
-    { degree: "Master's degree in Artificial Intelligence",               institution: 'University Paris-Saclay',  note: '',                       dateRange: 'Sep 2025 -- Present',    location: 'Orsay, France'   },
-    { degree: 'Magistère in Computer Science (Honors Research Program)',  institution: 'University Paris-Saclay',  note: 'Graduated with Honors',  dateRange: 'Sep 2024 -- Aug 2025',   location: 'Orsay, France'   },
-    { degree: "Double Bachelor's Degree in Computer Science and Mathematics", institution: 'University Paris-Saclay', note: '',                    dateRange: 'Sep 2022 -- Aug 2024',   location: 'Orsay, France'   },
-    { degree: 'Intensive English Language Program',                       institution: 'EF New York',              note: 'Achieved C2 Proficiency', dateRange: 'Sep 2019 -- May 2020',  location: 'New York, USA'   },
+  mk('education', 'Education', [
+    { degree: "Master's degree in Artificial Intelligence",
+      institution: 'University Paris-Saclay', note: '',
+      dateRange: 'Sep 2025 -- Present', location: 'Orsay, France' },
+    { degree: 'Magistère in Computer Science (Honors Research Program)',
+      institution: 'University Paris-Saclay', note: 'Graduated with Honors',
+      dateRange: 'Sep 2024 -- Aug 2025', location: 'Orsay, France' },
+    { degree: "Double Bachelor's Degree in Computer Science and Mathematics",
+      institution: 'University Paris-Saclay', note: '',
+      dateRange: 'Sep 2022 -- Aug 2024', location: 'Orsay, France' },
+    { degree: 'Intensive English Language Program',
+      institution: 'EF New York', note: 'Achieved C2 Proficiency',
+      dateRange: 'Sep 2019 -- May 2020', location: 'New York, USA' }
   ]);
 
-  mkSection('publication', 'Publications', [
-    { title: 'Revisiting Class Imbalance Ratios in Imbalanced Learning',               venue: 'Junior Conference on Data Science & Engineering, 2025' },
-    { title: 'Fine-Grained Mention-Level Analysis of Biomedical Entity Linking Models', venue: 'Medical Informatics Europe, 2026'                       },
+  mk('publication', 'Publications', [
+    { title: 'Revisiting Class Imbalance Ratios in Imbalanced Learning',
+      venue: 'Junior Conference on Data Science & Engineering, 2025' },
+    { title: 'Fine-Grained Mention-Level Analysis of Biomedical Entity Linking Models',
+      venue: 'Medical Informatics Europe, 2026' }
   ]);
 
-  mkSection('experience', 'Professional Experience', [
-    {
-      role: 'Supervised Research Project',
+  mk('experience', 'Professional Experience', [
+    { role: 'Supervised Research Project',
       org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
       dateRange: 'Jan 2026 -- Mar 2026', location: 'Orsay, France',
       description: 'Investigated Biomedical Entity Linking (BEL) strategies to normalize PICO entities (Population, Intervention, Comparison, Outcome) to the MeSH knowledge base. Developed and evaluated a hybrid normalization pipeline, comparing a custom rule-based script (heuristics) with ArboEL (a state-of-the-art graph-based entity linking model).',
-      contact: 'Nona Naderi (LISN, Université Paris-Saclay)',
-    },
-    {
-      role: 'Research Internship',
+      contact: 'Nona Naderi (LISN, Université Paris-Saclay)' },
+    { role: 'Research Internship',
       org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
       dateRange: 'May 2025 -- Aug 2025', location: 'Orsay, France',
       description: 'Analyzed biomedical entity linking models on the BELB benchmark, focusing on generalization to rare or complex mentions. Developed quantitative and visual analyses of dataset characteristics (mention length, ambiguity, frequency) and their impact on prediction quality. Compared recent models, identified consistent weaknesses, and proposed improvements; published a paper in MIE.',
-      contact: 'Nona Naderi (LISN, Université Paris-Saclay)',
-    },
-    {
-      role: 'Supervised Research Project',
+      contact: 'Nona Naderi (LISN, Université Paris-Saclay)' },
+    { role: 'Supervised Research Project',
       org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
       dateRange: 'Jan 2025 -- May 2025', location: 'Orsay, France',
       description: 'Studied the impact of class imbalance on classification tasks using a spherical Teacher-Student perceptron. Conducted experiments in Python (Scikit-Learn, NumPy, Matplotlib) with different noise levels, loss functions, and training methods (GD, Langevin dynamics). Demonstrated that the optimal imbalance ratio in training sets differs from 0.5 in class-imbalanced problems.',
-      contact: 'François Landes (LISN, Université Paris-Saclay)',
-    },
-    {
-      role: 'Generative AI Trainer',
+      contact: 'François Landes (LISN, Université Paris-Saclay)' },
+    { role: 'Generative AI Trainer',
       org: 'Outlier / Alignerr',
       dateRange: 'Jan 2025 -- Present', location: 'Remote',
       description: 'Designed and refined prompts to enhance the performance of generative AI models. Reviewed and corrected AI-generated outputs to ensure accuracy and quality. Contributed to the continuous improvement of deep learning models through feedback and prompt optimization.',
-      contact: '',
-    },
+      contact: '' }
   ]);
 
-  // newpage before projects — use generic section
-  mkSection('generic', '--- Page break ---', [
-    { content: '\\newpage' },
-  ]);
+  mk('pagebreak', 'Page Break', []);
 
-  mkSection('project', 'Projects', [
-    {
-      title: 'Structure Detection in Fusion Plasma Simulations',
-      description: 'Developed a multi-stage detection pipeline featuring a YOLOv8 architecture optimized with a custom MLP post-filter for low-contrast frames, incorporating a pseudo-labeling strategy to expand a limited 30-image dataset and a feature extractor targeting intensity statistics and Sobel gradients.',
+  mk('project', 'Projects', [
+    { title: 'Structure Detection in Fusion Plasma Simulations',
       url: 'https://github.com/baptistepras/Structure-detection-in-fusion-plasma-simulations',
-    },
-    {
-      title: 'Measuring Market Impact of Financial News',
-      description: 'Engineered a computationally efficient framework to transform unstructured financial news into (date, ticker, impact summary) event representations by implementing a hierarchical Map-Reduce summarization architecture with compact Transformers, ensuring numerical fidelity and entity grounding while validating results through a finance-oriented LLM-as-a-judge audit.',
+      description: 'Developed a multi-stage detection pipeline featuring a YOLOv8 architecture optimized with a custom MLP post-filter for low-contrast frames, incorporating a pseudo-labeling strategy to expand a limited 30-image dataset and a feature extractor targeting intensity statistics and Sobel gradients.' },
+    { title: 'Measuring Market Impact of Financial News',
       url: 'https://github.com/baptistepras/financial-news-impact-prediction',
-    },
-    {
-      title: 'NBA MVP Prediction Model',
-      description: 'Collected and cleaned player and team statistics from publicly available online sources to build a structured dataset. Performed feature selection and engineering, experimenting with different attribute selection strategies. Using several predictive models implemented with Scikit-Learn, achieved an accuracy > 80% in predicting the actual MVP outcome.',
+      description: 'Engineered a computationally efficient framework to transform unstructured financial news into (date, ticker, impact summary) event representations by implementing a hierarchical Map-Reduce summarization architecture with compact Transformers, ensuring numerical fidelity and entity grounding while validating results through a finance-oriented LLM-as-a-judge audit.' },
+    { title: 'NBA MVP Prediction Model',
       url: 'https://github.com/baptistepras/nba_mvp_prediction',
-    },
-    {
-      title: 'Traffic Sign Recognition Model',
-      description: 'Developed a machine learning model to recognize traffic signs from pictures. Implemented preprocessing (normalization, resizing, feature extraction) and trained multiple supervised learning algorithms, reaching over 95% accuracy.',
+      description: 'Collected and cleaned player and team statistics from publicly available online sources to build a structured dataset. Performed feature selection and engineering, experimenting with different attribute selection strategies. Using several predictive models implemented with Scikit-Learn, achieved an accuracy > 80% in predicting the actual MVP outcome.' },
+    { title: 'Traffic Sign Recognition Model',
       url: 'https://github.com/baptistepras/traffic_sign_recognition',
-    },
-    {
-      title: 'Dual Sudoku AI Agent',
-      description: "Designed an artificial intelligence to solve and play Dual Sudoku by combining search algorithms and heuristic strategies. Implemented efficient state representation and evaluation functions to handle the game's combinatorial complexity.",
+      description: 'Developed a machine learning model to recognize traffic signs from pictures. Implemented preprocessing (normalization, resizing, feature extraction) and trained multiple supervised learning algorithms, reaching over 95% accuracy.' },
+    { title: 'Dual Sudoku AI Agent',
       url: 'https://github.com/baptistepras/AI_DualSudoku',
-    },
-    {
-      title: 'Java-like Interpreter',
-      description: 'Built an interpreter supporting basic arithmetic, classes, methods, and Java-like type checking. Entirely coded in OCaml with Ocamllex and Menhir.',
+      description: "Designed an artificial intelligence to solve and play Dual Sudoku by combining search algorithms and heuristic strategies. Implemented efficient state representation and evaluation functions to handle the game's combinatorial complexity." },
+    { title: 'Java-like Interpreter',
       url: 'https://github.com/baptistepras/kawa',
-    },
+      description: 'Built an interpreter supporting basic arithmetic, classes, methods, and Java-like type checking. Entirely coded in OCaml with Ocamllex and Menhir.' }
   ]);
 
-  // "Other projects" block as generic raw LaTeX
-  mkSection('generic', 'Other Projects (raw LaTeX)', [
-    { content: '{\\large\\bfseries Other projects\\par}\n\\begin{itemize}\n    \\item {\\large Developed various algorithmic implementations (e.g., Graphs, Linked Trees, Quadtrees) and 2D games (e.g., Air Hockey, Labyrinth solver, Colt Express, Worms) across Python, OCaml, Java, and C++.}\n\\end{itemize}' },
+  // "Other projects" — raw LaTeX, empty section name so no \section{} header is emitted
+  mk('generic', '', [
+    { content:
+        '{\\large\\bfseries Other projects\\par}\n'
+      + '\\begin{itemize}\n'
+      + '    \\item {\\large Developed various algorithmic implementations (e.g., Graphs, Linked Trees, Quadtrees)'
+      + ' and 2D games (e.g., Air Hockey, Labyrinth solver, Colt Express, Worms) across Python, OCaml, Java, and C++.}\n'
+      + '\\end{itemize}' }
   ]);
 
-  mkSection('skills', 'Skills', [
+  mk('skills', 'Skills', [
     { category: 'Programming:', items: 'Python (PyTorch, Scikit-Learn, NumPy, Matplotlib), Bash, C/C++, Java, OCaml, SQL' },
     { category: 'Artificial Intelligence:', items: 'Deep Learning, Natural Language Processing, Computer Vision' },
-    { category: 'Tools:', items: 'LaTeX, Git, Linux, Slurm (Cluster Computing), Microsoft Office Suite' },
+    { category: 'Tools:', items: 'LaTeX, Git, Linux, Slurm (Cluster Computing), Microsoft Office Suite' }
   ]);
 
-  // Achievements as generic raw LaTeX to match template exactly
-  mkSection('generic', 'Achievements', [
-    { content: '{\\large\\bfseries Winner of an AI competition by designing the best-performing Dual Sudoku agent\\par}\n\\vspace{0.5em}\n\n{\\large\\bfseries 3x Prologin finalist, a national algorithmic programming contest\\par}\n\\vspace{0.7em}' },
+  mk('generic', 'Achievements', [
+    { content:
+        '{\\large\\bfseries Winner of an AI competition by designing the best-performing Dual Sudoku agent\\par}\n'
+      + '\\vspace{0.5em}\n\n'
+      + '{\\large\\bfseries 3x Prologin finalist, a national algorithmic programming contest\\par}\n'
+      + '\\vspace{0.7em}' }
   ]);
 
-  // Languages as generic raw LaTeX to match the tabular* template exactly
-  mkSection('generic', 'Languages', [
-    { content: '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n    {\\large\\bfseries French} & {\\large\\bfseries English} \\\\\n    {\\large Native} & {\\large Bilingual Proficiency} \\\\\n    & {\\large TOEFL iBT: 108/120} \\\\\n    & {\\large TOEIC: 990/990} \\\\\n    [0.9em]\n    {\\large\\bfseries Russian} & \\\\\n    {\\large Conversational} & \\\\\n\\end{tabular*}' },
+  mk('generic', 'Languages', [
+    { content:
+        '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n'
+      + '    {\\large\\bfseries French} & {\\large\\bfseries English} \\\\\n'
+      + '    {\\large Native} & {\\large Bilingual Proficiency} \\\\\n'
+      + '    & {\\large TOEFL iBT: 108/120} \\\\\n'
+      + '    & {\\large TOEIC: 990/990} \\\\\n'
+      + '    [0.9em]\n'
+      + '    {\\large\\bfseries Russian} & \\\\\n'
+      + '    {\\large Conversational} & \\\\\n'
+      + '\\end{tabular*}' }
   ]);
 }
 
-/* ═══════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════ */
-
-/** Escape HTML for safe insertion into innerHTML. */
-function esc(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ── Init: start with one education section ─────────── */
+/* ── Init ── */
 addSection('education');
 </script>
 </body>
