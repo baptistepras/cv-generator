@@ -333,6 +333,7 @@ a:hover{opacity:.8}
 <div id="action-bar">
   <button class="btn" onclick="openLatexModal()">&#128196; View LaTeX</button>
   <button class="btn" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
+  <button class="btn" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
 </div>
 
 <!-- LaTeX modal -->
@@ -358,7 +359,6 @@ a:hover{opacity:.8}
       <pre id="debug-log"></pre>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
       <button class="btn" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
     </div>
   </div>
@@ -1075,52 +1075,34 @@ async function compilePdf() {
   }
 }
 
-/**
- * Open the .tex in a new Overleaf project.
- *
- * Overleaf requires multipart/form-data with fields named snip_name[] and snip[].
- * The textarea must NOT be display:none — we use visibility:hidden + position:absolute
- * instead so the form element is rendered (thus submitted) but not visible.
- * We keep the form in the DOM for 3 s to ensure the browser completes the POST
- * before we clean up.
- */
-/**
- * Open the .tex in a new Overleaf project.
- *
- * Overleaf requires multipart/form-data with snip_name[] and snip[].
- * - snip_name[]: input type="hidden" — always submitted regardless of visibility
- * - snip[]:     textarea positioned off-screen with opacity:0 (NOT visibility:hidden
- *               or display:none, which some browsers exclude from submission)
- * The form is kept in DOM for 5 s to ensure the browser completes the POST.
- */
 function openOverleaf() {
   syncAll();
-  const tex  = buildLatex();
+  const tex = buildLatex();
+
   const form = document.createElement('form');
-  form.method  = 'POST';
-  form.action  = 'https://www.overleaf.com/docs';
-  form.target  = '_blank';
-  form.enctype = 'multipart/form-data';
+  form.method = 'POST';
+  form.action = 'https://www.overleaf.com/docs';
+  form.target = '_blank';
   form.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden';
 
-  // snip_name[]: type=hidden is always submitted
-  const nameEl = document.createElement('input');
-  nameEl.type  = 'hidden';
-  nameEl.name  = 'snip_name[]';
-  nameEl.value = 'main.tex';
-  form.appendChild(nameEl);
+  const encodedSnip = document.createElement('input');
+  encodedSnip.type = 'hidden';
+  encodedSnip.name = 'encoded_snip';
+  encodedSnip.value = encodeURIComponent(tex);
+  form.appendChild(encodedSnip);
 
-  // snip[]: must be a rendered (non-hidden) element for multipart submission;
-  // we make it invisible via opacity:0 positioned absolutely off-screen
-  const snipEl = document.createElement('textarea');
-  snipEl.name  = 'snip[]';
-  snipEl.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
-  snipEl.value = tex;
-  form.appendChild(snipEl);
+  const engine = document.createElement('input');
+  engine.type = 'hidden';
+  engine.name = 'engine';
+  engine.value = 'pdflatex';
+  form.appendChild(engine);
 
   document.body.appendChild(form);
   form.submit();
-  setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 5000);
+
+  setTimeout(() => {
+    if (form.parentNode) form.parentNode.removeChild(form);
+  }, 1500);
 }
 
 function downloadPdf() { if (pdfBlob) triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf'); }
