@@ -922,7 +922,7 @@ function buildLatex() {
   state.sections.forEach(sec => {
     if (sec.type === 'pagebreak') { tex += '\n\\newpage\n'; return; }
     tex += '\n';
-    if (sec.name.trim()) tex += '\\section{' + le(sec.name) + '}\n\n';
+    if (sec.name.trim()) tex += '\\vspace{-0.2em}\n\\section{' + le(sec.name) + '}\n\\vspace{0.2em}\n\n';
 
     if (sec.type === 'languages' && sec.entries.length) {
       tex += '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n';
