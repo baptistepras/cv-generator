@@ -16,7 +16,6 @@
   --radius:4px;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--danger:#cc2222;
   --topbar-h:52px;
   --link:#1a5fa8;
-  --compile-bg:#111111;--compile-fg:#ffffff;
 }
 [data-theme="dark"]{
   --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;
@@ -26,7 +25,6 @@
   --input-bg:#1a1a1a;
   --shadow:0 2px 8px rgba(0,0,0,.40);--shadow-lg:0 6px 24px rgba(0,0,0,.60);
   --link:#6aabff;
-  --compile-bg:#f0f0f0;--compile-fg:#0f0f0f;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px;scroll-behavior:smooth}
@@ -62,13 +60,7 @@ a:hover{opacity:.8}
 .btn:hover{background:var(--bg3);border-color:var(--text)}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .btn.primary:hover{opacity:.85}
-/* compile button: fixed color, never follows the palette accent */
-.btn.compile{
-  background:var(--compile-bg)!important;
-  color:var(--compile-fg)!important;
-  border-color:var(--compile-bg)!important;
-}
-.btn.compile:hover{opacity:.85}
+/* compile button: same look as any .btn — no special class needed */
 .btn.danger{color:var(--danger);border-color:var(--danger)}
 .btn.danger:hover{background:var(--danger);color:#fff}
 .btn.sm{padding:.22rem .52rem;font-size:.72rem}
@@ -172,6 +164,22 @@ a:hover{opacity:.8}
 .entry-fields{display:flex;flex-direction:column;gap:.48rem}
 .entry-field{display:flex;flex-direction:column;gap:0}
 .entry-field label{font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
+/* plain <input> inside entry-field (URLs etc.) — override browser defaults explicitly */
+.entry-field input[type="text"]{
+  background:var(--input-bg)!important;
+  color:var(--text)!important;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:.33rem .5rem;
+  font-size:.85rem;
+  outline:none;
+  width:100%;
+  transition:border-color .15s;
+  /* prevent browser autofill from overriding colors */
+  -webkit-text-fill-color:var(--text)!important;
+  box-shadow:0 0 0 100px var(--input-bg) inset!important;
+}
+.entry-field input[type="text"]:focus{border-color:var(--border2)}
 .entry-footer{display:flex;justify-content:flex-end;padding:.4rem .7rem;border-top:1.5px solid var(--border);background:var(--bg2)}
 
 /* ── rich toolbar ── */
@@ -255,7 +263,7 @@ a:hover{opacity:.8}
   .field-grid{grid-template-columns:1fr}
   #add-section-bar .btn{width:100%;justify-content:center}
   #topbar{padding:.45rem .85rem}
-  #topbar h1{font-size:.82rem}
+  #topbar h1{display:none}
 }
 </style>
 </head>
@@ -324,7 +332,7 @@ a:hover{opacity:.8}
 <!-- Action bar -->
 <div id="action-bar">
   <button class="btn" onclick="openLatexModal()">&#128196; View LaTeX</button>
-  <button class="btn compile" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
+  <button class="btn" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
 </div>
 
 <!-- LaTeX modal -->
@@ -351,7 +359,7 @@ a:hover{opacity:.8}
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
-      <button class="btn compile" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
+      <button class="btn" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
     </div>
   </div>
 </div>
@@ -1076,6 +1084,15 @@ async function compilePdf() {
  * We keep the form in the DOM for 3 s to ensure the browser completes the POST
  * before we clean up.
  */
+/**
+ * Open the .tex in a new Overleaf project.
+ *
+ * Overleaf requires multipart/form-data with snip_name[] and snip[].
+ * - snip_name[]: input type="hidden" — always submitted regardless of visibility
+ * - snip[]:     textarea positioned off-screen with opacity:0 (NOT visibility:hidden
+ *               or display:none, which some browsers exclude from submission)
+ * The form is kept in DOM for 5 s to ensure the browser completes the POST.
+ */
 function openOverleaf() {
   syncAll();
   const tex  = buildLatex();
@@ -1084,26 +1101,26 @@ function openOverleaf() {
   form.action  = 'https://www.overleaf.com/docs';
   form.target  = '_blank';
   form.enctype = 'multipart/form-data';
-  form.style.cssText = 'position:fixed;top:-200px;left:-200px;width:1px;height:1px;overflow:hidden';
+  form.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden';
 
-  // snip_name[] — must use input type=text (not hidden) to avoid some browser quirks
-  const nameEl   = document.createElement('input');
-  nameEl.type    = 'text';
-  nameEl.name    = 'snip_name[]';
-  nameEl.value   = 'main.tex';
-  nameEl.style.cssText = 'position:absolute;left:-9999px;visibility:hidden';
+  // snip_name[]: type=hidden is always submitted
+  const nameEl = document.createElement('input');
+  nameEl.type  = 'hidden';
+  nameEl.name  = 'snip_name[]';
+  nameEl.value = 'main.tex';
   form.appendChild(nameEl);
 
-  // snip[] — textarea preserves newlines through form encoding
-  const snipEl   = document.createElement('textarea');
-  snipEl.name    = 'snip[]';
-  snipEl.value   = tex;
-  snipEl.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;width:1px;height:1px';
+  // snip[]: must be a rendered (non-hidden) element for multipart submission;
+  // we make it invisible via opacity:0 positioned absolutely off-screen
+  const snipEl = document.createElement('textarea');
+  snipEl.name  = 'snip[]';
+  snipEl.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
+  snipEl.value = tex;
   form.appendChild(snipEl);
 
   document.body.appendChild(form);
   form.submit();
-  setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 3000);
+  setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 5000);
 }
 
 function downloadPdf() { if (pdfBlob) triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf'); }
