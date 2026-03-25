@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LaTeX CV Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Variables ─────────────────────────────────────────────── */
+:root {
+  --bg:        #ffffff;
+  --bg2:       #f4f4f4;
+  --bg3:       #e8e8e8;
+  --border:    #cccccc;
+  --border2:   #aaaaaa;
+  --text:      #111111;
+  --text2:     #444444;
+  --text3:     #777777;
+  --accent:    #111111;
+  --accent-fg: #ffffff;
+  --input-bg:  #ffffff;
+  --shadow:    0 2px 8px rgba(0,0,0,.10);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,.14);
+  --radius:    4px;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'DM Sans', sans-serif;
+  --danger:    #cc2222;
+  --drag-over: #d0e8ff;
+}
+[data-theme="dark"] {
+  --bg:        #0f0f0f;
+  --bg2:       #1a1a1a;
+  --bg3:       #242424;
+  --border:    #333333;
+  --border2:   #555555;
+  --text:      #f0f0f0;
+  --text2:     #bbbbbb;
+  --text3:     #777777;
+  --accent:    #f0f0f0;
+  --accent-fg: #0f0f0f;
+  --input-bg:  #1a1a1a;
+  --shadow:    0 2px 8px rgba(0,0,0,.40);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,.60);
+  --drag-over: #1a2a3a;
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .25s,color .25s;
+}
+button{cursor:pointer;font-family:var(--sans)}
+input,textarea,select{font-family:var(--sans)}
+a{color:inherit}
+
+/* ── Top bar ───────────────────────────────────────────────── */
+#topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 2rem;
+  background:var(--bg);
+  border-bottom:1.5px solid var(--border);
+  box-shadow:var(--shadow);
+}
+#topbar h1{
+  font-family:var(--mono);
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--text);
+}
+.topbar-right{display:flex;gap:.6rem;align-items:center}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem 1rem;
+  font-size:.82rem;font-weight:600;letter-spacing:.03em;
+  border:1.5px solid var(--border2);
+  border-radius:var(--radius);
+  background:transparent;
+  color:var(--text);
+  transition:background .15s,color .15s,border-color .15s;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--bg3);border-color:var(--text)}
+.btn.primary{
+  background:var(--accent);color:var(--accent-fg);border-color:var(--accent);
+}
+.btn.primary:hover{opacity:.85}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.sm{padding:.28rem .65rem;font-size:.75rem}
+.btn.icon{padding:.4rem .5rem;font-size:1rem;line-height:1}
+
+/* ── Theme toggle ──────────────────────────────────────────── */
+#theme-toggle{
+  width:2.1rem;height:2.1rem;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border2);
+  border-radius:var(--radius);
+  background:transparent;
+  font-size:1rem;
+  cursor:pointer;
+  color:var(--text);
+  transition:background .15s;
+}
+#theme-toggle:hover{background:var(--bg3)}
+
+/* ── Layout ────────────────────────────────────────────────── */
+#app{
+  max-width:860px;
+  margin:0 auto;
+  padding:2rem 1.5rem 6rem;
+}
+
+/* ── Personal info block ───────────────────────────────────── */
+.personal-block{
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  margin-bottom:1.75rem;
+  background:var(--bg2);
+}
+.personal-block h2{
+  font-family:var(--mono);
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:1rem;
+}
+
+/* ── Field grid ────────────────────────────────────────────── */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem .9rem}
+.field-grid.single{grid-template-columns:1fr}
+.field-group{display:flex;flex-direction:column;gap:.3rem}
+.field-group label{
+  font-size:.72rem;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text3);
+}
+.field-group input,.field-group textarea{
+  background:var(--input-bg);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text);
+  padding:.42rem .6rem;
+  font-size:.9rem;
+  outline:none;
+  transition:border-color .15s;
+  resize:vertical;
+}
+.field-group input:focus,.field-group textarea:focus{border-color:var(--border2)}
+
+/* ── Sections wrapper ──────────────────────────────────────── */
+#sections-list{display:flex;flex-direction:column;gap:1.25rem}
+
+/* ── Section card ──────────────────────────────────────────── */
+.section-card{
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  background:var(--bg2);
+  overflow:hidden;
+  transition:box-shadow .15s,border-color .15s;
+}
+.section-card.drag-over{
+  border-color:var(--border2);
+  box-shadow:var(--shadow-lg);
+  outline:2px dashed var(--border2);
+}
+
+.section-header{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.7rem 1rem;
+  border-bottom:1.5px solid var(--border);
+  background:var(--bg3);
+  user-select:none;
+}
+.section-drag-handle{
+  font-size:1.1rem;color:var(--text3);
+  cursor:grab;padding:.1rem .3rem;
+  border-radius:2px;
+}
+.section-drag-handle:active{cursor:grabbing}
+.section-drag-handle:hover{color:var(--text2)}
+
+.section-name{
+  flex:1;
+  font-family:var(--mono);
+  font-size:.82rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text);
+  background:transparent;border:none;outline:none;
+}
+.section-name:focus{
+  background:var(--input-bg);
+  border-bottom:1.5px solid var(--border2);
+  padding:0 .3rem;
+}
+
+.section-actions{display:flex;gap:.4rem;margin-left:auto}
+
+.section-body{padding:1rem 1rem .8rem}
+
+/* ── Entry card ────────────────────────────────────────────── */
+.entries-list{display:flex;flex-direction:column;gap:.75rem}
+
+.entry-card{
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  background:var(--bg);
+  overflow:hidden;
+}
+.entry-card.drag-over{
+  outline:2px dashed var(--border2);
+}
+
+.entry-header{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.45rem .7rem;
+  background:var(--bg2);
+  border-bottom:1.5px solid var(--border);
+  cursor:pointer;
+  user-select:none;
+}
+.entry-drag-handle{
+  font-size:.95rem;color:var(--text3);
+  cursor:grab;
+}
+.entry-drag-handle:active{cursor:grabbing}
+.entry-title-preview{
+  flex:1;font-size:.82rem;font-weight:500;color:var(--text2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.entry-toggle{font-size:.8rem;color:var(--text3);transition:transform .2s}
+.entry-toggle.open{transform:rotate(180deg)}
+
+.entry-body{padding:.75rem .8rem;display:none}
+.entry-body.open{display:block}
+
+.entry-fields{display:flex;flex-direction:column;gap:.55rem}
+.entry-field{display:flex;flex-direction:column;gap:.25rem}
+.entry-field label{
+  font-size:.68rem;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text3);
+}
+.entry-field input,.entry-field textarea{
+  background:var(--input-bg);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  color:var(--text);
+  padding:.38rem .55rem;
+  font-size:.88rem;
+  outline:none;
+  transition:border-color .15s;
+  resize:vertical;
+  width:100%;
+}
+.entry-field textarea{min-height:62px}
+.entry-field input:focus,.entry-field textarea:focus{border-color:var(--border2)}
+
+.entry-footer{
+  display:flex;justify-content:flex-end;
+  padding:.5rem .8rem;
+  border-top:1.5px solid var(--border);
+  background:var(--bg2);
+}
+
+/* ── Add entry button ──────────────────────────────────────── */
+.add-entry-row{
+  margin-top:.65rem;
+  display:flex;justify-content:center;
+}
+
+/* ── Add section bar ───────────────────────────────────────── */
+#add-section-bar{
+  margin-top:1.25rem;
+  display:flex;justify-content:center;
+  gap:.7rem;flex-wrap:wrap;
+}
+
+/* ── Action bar (bottom) ───────────────────────────────────── */
+#action-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;justify-content:center;gap:.75rem;align-items:center;
+  padding:.9rem 2rem;
+  background:var(--bg);
+  border-top:1.5px solid var(--border);
+  box-shadow:0 -4px 16px rgba(0,0,0,.15);
+  z-index:100;
+}
+
+/* ── Modal ─────────────────────────────────────────────────── */
+.modal-backdrop{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:500;
+  align-items:center;justify-content:center;
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  background:var(--bg2);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  width:min(92vw,820px);
+  max-height:90vh;
+  display:flex;flex-direction:column;
+  box-shadow:var(--shadow-lg);
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;
+  border-bottom:1.5px solid var(--border);
+  background:var(--bg3);
+}
+.modal-header h3{
+  font-family:var(--mono);font-size:.85rem;font-weight:700;letter-spacing:.07em;
+}
+.modal-body{
+  flex:1;overflow:auto;
+  padding:1.1rem;
+}
+.modal-footer{
+  display:flex;justify-content:flex-end;gap:.6rem;
+  padding:.75rem 1.1rem;
+  border-top:1.5px solid var(--border);
+  background:var(--bg3);
+}
+
+/* ── Code viewer ───────────────────────────────────────────── */
+#latex-code{
+  font-family:var(--mono);
+  font-size:.76rem;
+  line-height:1.65;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem;
+  white-space:pre;
+  overflow:auto;
+  color:var(--text);
+  max-height:60vh;
+}
+
+/* ── PDF viewer ────────────────────────────────────────────── */
+#pdf-frame{
+  width:100%;height:60vh;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  background:#fff;
+}
+#pdf-status{
+  font-size:.85rem;color:var(--text2);
+  padding:.5rem 0;text-align:center;
+}
+
+/* ── Spinner ───────────────────────────────────────────────── */
+.spinner{
+  display:inline-block;
+  width:1em;height:1em;
+  border:2px solid var(--border);
+  border-top-color:var(--text);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Misc ──────────────────────────────────────────────────── */
+.divider{height:1.5px;background:var(--border);margin:.5rem 0}
+.section-type-label{
+  font-size:.68rem;font-weight:600;color:var(--text3);
+  letter-spacing:.07em;text-transform:uppercase;
+  margin-left:.3rem;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ─────────────────────────────────────────────── -->
+<div id="topbar">
+  <h1>⬛ CV GENERATOR</h1>
+  <div class="topbar-right">
+    <button class="btn sm" id="btn-load-demo">Load example</button>
+    <button id="theme-toggle" title="Toggle theme">☀</button>
+  </div>
+</div>
+
+<!-- ── Main app ────────────────────────────────────────────── -->
+<div id="app">
+
+  <!-- Personal info -->
+  <div class="personal-block">
+    <h2>Personal Info</h2>
+    <div class="field-grid">
+      <div class="field-group">
+        <label>Full name</label>
+        <input type="text" id="pi-name" placeholder="Jean Dupont"/>
+      </div>
+      <div class="field-group">
+        <label>Title / tagline</label>
+        <input type="text" id="pi-title" placeholder="Master's student in Artificial Intelligence"/>
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input type="text" id="pi-email" placeholder="you@example.com"/>
+      </div>
+      <div class="field-group">
+        <label>Website</label>
+        <input type="text" id="pi-website" placeholder="yoursite.com"/>
+      </div>
+      <div class="field-group">
+        <label>GitHub URL</label>
+        <input type="text" id="pi-github" placeholder="https://github.com/you"/>
+      </div>
+      <div class="field-group">
+        <label>LinkedIn URL</label>
+        <input type="text" id="pi-linkedin" placeholder="https://linkedin.com/in/you"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sections -->
+  <div id="sections-list"></div>
+
+  <!-- Add section -->
+  <div id="add-section-bar">
+    <button class="btn" onclick="addSection('generic')">+ Generic section</button>
+    <button class="btn" onclick="addSection('education')">+ Education</button>
+    <button class="btn" onclick="addSection('experience')">+ Experience</button>
+    <button class="btn" onclick="addSection('publication')">+ Publications</button>
+    <button class="btn" onclick="addSection('project')">+ Projects</button>
+    <button class="btn" onclick="addSection('skills')">+ Skills</button>
+    <button class="btn" onclick="addSection('languages')">+ Languages</button>
+  </div>
+</div>
+
+<!-- ── Bottom action bar ────────────────────────────────────── -->
+<div id="action-bar">
+  <button class="btn" onclick="openLatexModal()">📄 View LaTeX</button>
+  <button class="btn primary" onclick="openPdfModal()">🖨 Compile &amp; Preview PDF</button>
+</div>
+
+<!-- ── LaTeX modal ──────────────────────────────────────────── -->
+<div class="modal-backdrop" id="latex-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>LATEX SOURCE</h3>
+      <button class="btn sm" onclick="closeModal('latex-modal')">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <pre id="latex-code"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="copyLatex()">📋 Copy</button>
+      <button class="btn" onclick="downloadLatex()">⬇ Download .tex</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PDF modal ────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="pdf-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>PDF PREVIEW</h3>
+      <button class="btn sm" onclick="closeModal('pdf-modal')">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="pdf-status">Compiling…  <span class="spinner"></span></div>
+      <iframe id="pdf-frame" style="display:none"></iframe>
+    </div>
+    <div class="modal-footer">
+      <button class="btn primary" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA MODEL
+   ═══════════════════════════════════════════════════════ */
+
+/*
+ * Each section has: { id, type, name, entries[] }
+ * Each entry has:   { id, fields: { key: value } }
+ * Field schemas per type are defined in SCHEMAS.
+ */
+
+let state = { sections: [] };
+let pdfBlob = null;
+
+const SCHEMAS = {
+  education: [
+    { key: 'degree',      label: 'Degree / Program',  type: 'input' },
+    { key: 'institution', label: 'Institution',        type: 'input' },
+    { key: 'note',        label: 'Note (honors…)',     type: 'input' },
+    { key: 'dateRange',   label: 'Date range',         type: 'input' },
+    { key: 'location',   label: 'Location',            type: 'input' },
+  ],
+  experience: [
+    { key: 'role',        label: 'Role / Title',       type: 'input' },
+    { key: 'org',         label: 'Organization',       type: 'input' },
+    { key: 'dateRange',   label: 'Date range',         type: 'input' },
+    { key: 'location',   label: 'Location',            type: 'input' },
+    { key: 'description',label: 'Description',         type: 'textarea' },
+    { key: 'contact',     label: 'Contact (optional)', type: 'input' },
+  ],
+  publication: [
+    { key: 'title',  label: 'Title',  type: 'input' },
+    { key: 'venue',  label: 'Venue',  type: 'input' },
+  ],
+  project: [
+    { key: 'title',       label: 'Title',       type: 'input' },
+    { key: 'url',         label: 'URL',         type: 'input' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+  ],
+  skills: [
+    { key: 'category',    label: 'Category',    type: 'input' },
+    { key: 'items',       label: 'Items',       type: 'textarea' },
+  ],
+  languages: [
+    { key: 'language',    label: 'Language',    type: 'input' },
+    { key: 'level',       label: 'Level',       type: 'input' },
+    { key: 'certs',       label: 'Certifications (optional)', type: 'input' },
+  ],
+  generic: [
+    { key: 'content',     label: 'Content (LaTeX or plain text)', type: 'textarea' },
+  ],
+};
+
+const TYPE_LABELS = {
+  education:   'Education',
+  experience:  'Experience',
+  publication: 'Publications',
+  project:     'Projects',
+  skills:      'Skills',
+  languages:   'Languages',
+  generic:     'Generic',
+};
+
+/* ═══════════════════════════════════════════════════════
+   ID GENERATION
+   ═══════════════════════════════════════════════════════ */
+let _id = 0;
+const uid = () => `id${++_id}`;
+
+/* ═══════════════════════════════════════════════════════
+   THEME
+   ═══════════════════════════════════════════════════════ */
+const themeBtn = document.getElementById('theme-toggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  themeBtn.textContent = dark ? '🌙' : '☀';
+});
+
+/* ═══════════════════════════════════════════════════════
+   SECTION MANAGEMENT
+   ═══════════════════════════════════════════════════════ */
+
+/** Add a new section of a given type to state and render it. */
+function addSection(type) {
+  const sec = {
+    id: uid(),
+    type,
+    name: TYPE_LABELS[type] || 'Section',
+    entries: [],
+  };
+  state.sections.push(sec);
+  renderSection(sec);
+  addEntry(sec.id);   // start with one empty entry
+}
+
+/** Remove a section by id. */
+function removeSection(secId) {
+  state.sections = state.sections.filter(s => s.id !== secId);
+  document.getElementById(`sec-${secId}`)?.remove();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENTRY MANAGEMENT
+   ═══════════════════════════════════════════════════════ */
+
+/** Add a new empty entry to a section. */
+function addEntry(secId) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (!sec) return;
+  const schema = SCHEMAS[sec.type] || SCHEMAS.generic;
+  const entry = {
+    id: uid(),
+    fields: Object.fromEntries(schema.map(f => [f.key, ''])),
+  };
+  sec.entries.push(entry);
+  renderEntry(secId, entry);
+}
+
+/** Remove entry from state and DOM. */
+function removeEntry(secId, entryId) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (sec) sec.entries = sec.entries.filter(e => e.id !== entryId);
+  document.getElementById(`entry-${entryId}`)?.remove();
+}
+
+/** Toggle entry body open/closed. */
+function toggleEntry(entryId) {
+  const body   = document.getElementById(`ebody-${entryId}`);
+  const toggle = document.getElementById(`etog-${entryId}`);
+  const open   = body.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER — SECTION
+   ═══════════════════════════════════════════════════════ */
+function renderSection(sec) {
+  const list = document.getElementById('sections-list');
+
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.id = `sec-${sec.id}`;
+  card.draggable = true;
+  card.dataset.secId = sec.id;
+
+  card.innerHTML = `
+    <div class="section-header">
+      <span class="section-drag-handle" title="Drag to reorder">⠿</span>
+      <input class="section-name" type="text" value="${esc(sec.name)}"
+             onchange="updateSectionName('${sec.id}', this.value)"
+             title="Click to rename"/>
+      <span class="section-type-label">[${sec.type}]</span>
+      <div class="section-actions">
+        <button class="btn sm" onclick="addEntry('${sec.id}')">+ Entry</button>
+        <button class="btn sm danger" onclick="removeSection('${sec.id}')">✕</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="entries-list" id="entries-${sec.id}"></div>
+      <div class="add-entry-row">
+        <button class="btn sm" onclick="addEntry('${sec.id}')">+ Add entry</button>
+      </div>
+    </div>
+  `;
+
+  list.appendChild(card);
+  setupSectionDrag(card);
+}
+
+/** Update section name in state. */
+function updateSectionName(secId, val) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (sec) sec.name = val;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER — ENTRY
+   ═══════════════════════════════════════════════════════ */
+function renderEntry(secId, entry) {
+  const sec    = state.sections.find(s => s.id === secId);
+  const schema = SCHEMAS[sec.type] || SCHEMAS.generic;
+  const list   = document.getElementById(`entries-${secId}`);
+
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+  card.id = `entry-${entry.id}`;
+  card.draggable = true;
+  card.dataset.entryId = entry.id;
+  card.dataset.secId   = secId;
+
+  const fieldsHtml = schema.map(f => `
+    <div class="entry-field">
+      <label>${esc(f.label)}</label>
+      ${f.type === 'textarea'
+        ? `<textarea rows="3"
+             data-sec="${secId}" data-entry="${entry.id}" data-key="${f.key}"
+             onchange="updateField('${secId}','${entry.id}','${f.key}',this.value)"
+             >${esc(entry.fields[f.key] || '')}</textarea>`
+        : `<input type="text"
+             data-sec="${secId}" data-entry="${entry.id}" data-key="${f.key}"
+             value="${esc(entry.fields[f.key] || '')}"
+             onchange="updateField('${secId}','${entry.id}','${f.key}',this.value)"/>`
+      }
+    </div>`).join('');
+
+  const firstKey = schema[0]?.key || 'content';
+  const preview  = entry.fields[firstKey] || '(empty)';
+
+  card.innerHTML = `
+    <div class="entry-header" onclick="toggleEntry('${entry.id}')">
+      <span class="entry-drag-handle" title="Drag to reorder"
+            onclick="event.stopPropagation()">⠿</span>
+      <span class="entry-title-preview" id="epreview-${entry.id}">${esc(preview)}</span>
+      <span class="entry-toggle" id="etog-${entry.id}">▾</span>
+    </div>
+    <div class="entry-body open" id="ebody-${entry.id}">
+      <div class="entry-fields">${fieldsHtml}</div>
+    </div>
+    <div class="entry-footer">
+      <button class="btn sm danger" onclick="removeEntry('${secId}','${entry.id}')">✕ Remove</button>
+    </div>
+  `;
+
+  list.appendChild(card);
+  setupEntryDrag(card);
+
+  // mark first entry body as open by default
+  document.getElementById(`etog-${entry.id}`)?.classList.add('open');
+}
+
+/** Update a field value in state and refresh the preview label. */
+function updateField(secId, entryId, key, value) {
+  const sec   = state.sections.find(s => s.id === secId);
+  const entry = sec?.entries.find(e => e.id === entryId);
+  if (!entry) return;
+  entry.fields[key] = value;
+
+  // refresh preview with first field
+  const schema   = SCHEMAS[sec.type] || SCHEMAS.generic;
+  const firstKey = schema[0]?.key || 'content';
+  const el       = document.getElementById(`epreview-${entryId}`);
+  if (el) el.textContent = entry.fields[firstKey] || '(empty)';
+}
+
+/* ═══════════════════════════════════════════════════════
+   DRAG & DROP — SECTIONS
+   ═══════════════════════════════════════════════════════ */
+let dragSec = null;
+
+function setupSectionDrag(card) {
+  const handle = card.querySelector('.section-drag-handle');
+  handle.addEventListener('mousedown', () => { card.draggable = true; });
+
+  card.addEventListener('dragstart', e => {
+    dragSec = card;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => card.classList.add('dragging'), 0);
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    document.querySelectorAll('.section-card').forEach(c => c.classList.remove('drag-over'));
+    dragSec = null;
+    syncSectionOrder();
+  });
+  card.addEventListener('dragover', e => {
+    if (!dragSec || dragSec === card) return;
+    e.preventDefault();
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    if (!dragSec || dragSec === card) return;
+    const list = document.getElementById('sections-list');
+    const cards = [...list.querySelectorAll('.section-card')];
+    const fromIdx = cards.indexOf(dragSec);
+    const toIdx   = cards.indexOf(card);
+    if (fromIdx < toIdx) list.insertBefore(dragSec, card.nextSibling);
+    else list.insertBefore(dragSec, card);
+  });
+}
+
+/** Sync state.sections order from DOM order. */
+function syncSectionOrder() {
+  const cards = [...document.querySelectorAll('#sections-list .section-card')];
+  const byId  = Object.fromEntries(state.sections.map(s => [s.id, s]));
+  state.sections = cards.map(c => byId[c.dataset.secId]).filter(Boolean);
+}
+
+/* ═══════════════════════════════════════════════════════
+   DRAG & DROP — ENTRIES
+   ═══════════════════════════════════════════════════════ */
+let dragEntry = null;
+
+function setupEntryDrag(card) {
+  const handle = card.querySelector('.entry-drag-handle');
+  handle.addEventListener('mousedown', () => { card.draggable = true; });
+
+  card.addEventListener('dragstart', e => {
+    dragEntry = card;
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
+    setTimeout(() => card.classList.add('dragging'), 0);
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over'));
+    dragEntry = null;
+    syncEntryOrders();
+  });
+  card.addEventListener('dragover', e => {
+    if (!dragEntry || dragEntry === card) return;
+    if (dragEntry.dataset.secId !== card.dataset.secId) return;
+    e.preventDefault(); e.stopPropagation();
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    card.classList.remove('drag-over');
+    if (!dragEntry || dragEntry === card) return;
+    if (dragEntry.dataset.secId !== card.dataset.secId) return;
+    const list = document.getElementById(`entries-${card.dataset.secId}`);
+    const cards = [...list.querySelectorAll('.entry-card')];
+    const fromIdx = cards.indexOf(dragEntry);
+    const toIdx   = cards.indexOf(card);
+    if (fromIdx < toIdx) list.insertBefore(dragEntry, card.nextSibling);
+    else list.insertBefore(dragEntry, card);
+  });
+}
+
+/** Sync entries order within each section from DOM. */
+function syncEntryOrders() {
+  state.sections.forEach(sec => {
+    const list  = document.getElementById(`entries-${sec.id}`);
+    if (!list) return;
+    const cards = [...list.querySelectorAll('.entry-card')];
+    const byId  = Object.fromEntries(sec.entries.map(e => [e.id, e]));
+    sec.entries = cards.map(c => byId[c.dataset.entryId]).filter(Boolean);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   LATEX GENERATION
+   ═══════════════════════════════════════════════════════ */
+
+/** Escape special LaTeX characters. */
+function latexEsc(s) {
+  if (!s) return '';
+  return s
+    .replace(/\\/g, '\\textbackslash{}')
+    .replace(/&/g, '\\&')
+    .replace(/%/g, '\\%')
+    .replace(/\$/g, '\\$')
+    .replace(/#/g, '\\#')
+    .replace(/_/g, '\\_')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/~/g, '\\textasciitilde{}')
+    .replace(/\^/g, '\\textasciicircum{}');
+}
+
+const le = latexEsc;
+
+/** Read personal info from DOM inputs. */
+function getPI() {
+  return {
+    name:     document.getElementById('pi-name').value.trim(),
+    title:    document.getElementById('pi-title').value.trim(),
+    email:    document.getElementById('pi-email').value.trim(),
+    website:  document.getElementById('pi-website').value.trim(),
+    github:   document.getElementById('pi-github').value.trim(),
+    linkedin: document.getElementById('pi-linkedin').value.trim(),
+  };
+}
+
+/** Build the full LaTeX source from state. */
+function buildLatex() {
+  const pi = getPI();
+
+  // preamble
+  let tex = `\\documentclass[10.4pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\\usepackage[a4paper,margin=1.4cm]{geometry}
+\\usepackage[T1]{fontenc}
+\\usepackage[utf8]{inputenc}
+\\usepackage{newtxtext,newtxmath}
+\\usepackage{fontawesome5}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage{xcolor}
+\\usepackage{enumitem}
+\\usepackage{tabularx}
+\\usepackage{array}
+\\usepackage{ragged2e}
+\\usepackage{titlesec}
+\\usepackage{setspace}
+\\usepackage{parskip}
+\\usepackage{multicol}
+\\usepackage{needspace}
+
+% -------------------------------------------------
+% Layout
+% -------------------------------------------------
+\\setlength{\\parindent}{0pt}
+\\setlength{\\parskip}{0pt}
+\\setlength{\\tabcolsep}{0pt}
+\\linespread{1.02}
+\\pagestyle{empty}
+\\urlstyle{same}
+
+\\setlist[itemize]{
+    leftmargin=1.1em, itemsep=0.05em,
+    topsep=0.05em, parsep=0em, partopsep=0em
+}
+
+\\titleformat{\\section}{\\Large\\bfseries}{}{0pt}{\\MakeUppercase}[\\vspace{0.15em}\\titlerule]
+\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}
+
+% -------------------------------------------------
+% Commands
+% -------------------------------------------------
+\\newcommand{\\cvheadername}[1]{{\\fontsize{25}{28}\\selectfont\\bfseries #1\\par}}
+\\newcommand{\\cvheadersubtitle}[1]{\\vspace{0.35em}{\\fontsize{15}{18}\\selectfont\\itshape #1\\par}}
+\\newcommand{\\contactline}[1]{\\vspace{0.8em}{\\normalsize #1\\par}}
+
+\\newcommand{\\eduentry}[5]{%
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+    {\\large\\bfseries #1} & {\\large #4} \\\\
+    {\\large\\itshape #2} & {\\large #5} \\\\
+    \\if\\relax\\detokenize{#3}\\relax\\else {\\large #3} & \\\\ \\fi
+  \\end{tabular*}\\vspace{0.15em}
+}
+
+\\newcommand{\\pubentry}[2]{{\\large\\bfseries #1\\par}{\\large\\itshape #2\\par}\\vspace{0.45em}}
+
+\\newcommand{\\experienceentry}[6]{%
+  \\Needspace{10\\baselineskip}
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+    {\\large\\bfseries #1} & {\\large #3} \\\\
+    {\\large\\itshape #2} & {\\large #4} \\\\
+  \\end{tabular*}
+  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
+    \\item {\\large #5}
+  \\end{itemize}
+  {\\large\\itshape #6\\par}\\vspace{0.2em}
+}
+
+\\newcommand{\\experienceentrynocon}[5]{%
+  \\Needspace{9\\baselineskip}
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+    {\\large\\bfseries #1} & {\\large #3} \\\\
+    {\\large\\itshape #2} & {\\large #4} \\\\
+  \\end{tabular*}
+  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
+    \\item {\\large #5}
+  \\end{itemize}\\vspace{0.2em}
+}
+
+\\newcommand{\\projectentry}[3]{{\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}
+  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
+    \\item {\\large #2}
+  \\end{itemize}\\vspace{0.1em}
+}
+
+\\newcommand{\\skillblock}[2]{{\\large\\bfseries #1\\par}
+  \\begin{itemize}\\item {\\large #2}\\end{itemize}\\vspace{0.35em}
+}
+
+\\begin{document}
+
+% -------------------------------------------------
+% Header
+% -------------------------------------------------
+\\begin{center}
+  \\cvheadername{${le(pi.name)}}
+  \\cvheadersubtitle{${le(pi.title)}}
+  \\contactline{
+    \\faEnvelope\\ \\href{mailto:${pi.email}}{${le(pi.email)}}
+    ${pi.website ? `\\hspace{1.2em}\n    \\faLink\\ \\href{https://${pi.website}}{${le(pi.website)}}` : ''}
+    ${pi.github  ? `\\hspace{1.2em}\n    \\faGithub\\ \\href{${pi.github}}{${le(pi.github)}}` : ''}
+  }
+  ${pi.linkedin ? `\\contactline{\\faLinkedin\\ \\href{${pi.linkedin}}{${le(pi.linkedin)}}}` : ''}
+\\end{center}
+`;
+
+  // sections
+  state.sections.forEach(sec => {
+    tex += `\n% -------------------------------------------------\n`;
+    tex += `% ${sec.name.toUpperCase()}\n`;
+    tex += `% -------------------------------------------------\n`;
+    tex += `\\section{${le(sec.name)}}\n\n`;
+
+    sec.entries.forEach(entry => {
+      const f = entry.fields;
+      switch (sec.type) {
+        case 'education':
+          tex += `\\eduentry\n  {${le(f.degree)}}\n  {${le(f.institution)}}\n  {${le(f.note)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n\n`;
+          break;
+        case 'publication':
+          tex += `\\pubentry\n  {${le(f.title)}}\n  {${le(f.venue)}}\n\n`;
+          break;
+        case 'experience':
+          if (f.contact && f.contact.trim()) {
+            tex += `\\experienceentry\n  {${le(f.role)}}\n  {${le(f.org)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n  {${le(f.description)}}\n  {Contact: ${le(f.contact)}}\n\n`;
+          } else {
+            tex += `\\experienceentrynocon\n  {${le(f.role)}}\n  {${le(f.org)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n  {${le(f.description)}}\n\n`;
+          }
+          break;
+        case 'project':
+          tex += `\\projectentry\n  {${le(f.title)}}\n  {${le(f.description)}}\n  {${f.url || '#'}}\n\n`;
+          break;
+        case 'skills':
+          tex += `\\skillblock\n  {${le(f.category)}}\n  {${le(f.items)}}\n\n`;
+          break;
+        case 'languages':
+          tex += `{\\large\\bfseries ${le(f.language)}\\par}\n`;
+          tex += `{\\large ${le(f.level)}`;
+          if (f.certs) tex += ` --- ${le(f.certs)}`;
+          tex += `\\par}\n\\vspace{0.6em}\n\n`;
+          break;
+        case 'generic':
+        default:
+          tex += `${f.content || ''}\n\n`;
+      }
+    });
+  });
+
+  tex += `\n\\end{document}\n`;
+  return tex;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODALS
+   ═══════════════════════════════════════════════════════ */
+function openLatexModal() {
+  syncEntryOrders();
+  syncSectionOrder();
+  const code = buildLatex();
+  document.getElementById('latex-code').textContent = code;
+  document.getElementById('latex-modal').classList.add('open');
+}
+
+function openPdfModal() {
+  syncEntryOrders();
+  syncSectionOrder();
+  pdfBlob = null;
+  document.getElementById('pdf-frame').style.display = 'none';
+  document.getElementById('pdf-frame').src = '';
+  document.getElementById('btn-dl-pdf').style.display = 'none';
+  document.getElementById('pdf-status').innerHTML = 'Compiling…&nbsp;<span class="spinner"></span>';
+  document.getElementById('pdf-modal').classList.add('open');
+  compilePdf();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => { if (e.target === bd) closeModal(bd.id); });
+});
+
+/* ═══════════════════════════════════════════════════════
+   COPY / DOWNLOAD LATEX
+   ═══════════════════════════════════════════════════════ */
+function copyLatex() {
+  const code = document.getElementById('latex-code').textContent;
+  navigator.clipboard.writeText(code).then(() => alert('Copied to clipboard!'));
+}
+
+function downloadLatex() {
+  const code = document.getElementById('latex-code').textContent;
+  const blob = new Blob([code], { type: 'text/plain' });
+  triggerDownload(URL.createObjectURL(blob), 'cv.tex');
+}
+
+/* ═══════════════════════════════════════════════════════
+   PDF COMPILATION (latexonline.cc)
+   ═══════════════════════════════════════════════════════ */
+async function compilePdf() {
+  const tex = buildLatex();
+  const status = document.getElementById('pdf-status');
+
+  try {
+    // latexonline.cc accepts raw tex via POST to /data
+    const formData = new FormData();
+    const blob = new Blob([tex], { type: 'application/x-tex' });
+    formData.append('file', blob, 'cv.tex');
+
+    const res = await fetch('https://latexonline.cc/data?command=pdflatex', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error(`Compilation failed (HTTP ${res.status})`);
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('pdf')) {
+      // server returned log / error text
+      const text = await res.text();
+      throw new Error('LaTeX error:\n' + text.slice(0, 600));
+    }
+
+    pdfBlob = await res.blob();
+    const url = URL.createObjectURL(pdfBlob);
+
+    const frame = document.getElementById('pdf-frame');
+    frame.src = url;
+    frame.style.display = 'block';
+    document.getElementById('btn-dl-pdf').style.display = 'inline-flex';
+    status.textContent = '';
+  } catch (err) {
+    status.innerHTML = `<span style="color:var(--danger)">⚠ ${esc(err.message)}</span>`;
+  }
+}
+
+function downloadPdf() {
+  if (!pdfBlob) return;
+  triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf');
+}
+
+function triggerDownload(url, filename) {
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+}
+
+/* ═══════════════════════════════════════════════════════
+   DEMO DATA
+   ═══════════════════════════════════════════════════════ */
+document.getElementById('btn-load-demo').addEventListener('click', loadDemo);
+
+function loadDemo() {
+  // personal info
+  document.getElementById('pi-name').value     = 'Baptiste PRAS';
+  document.getElementById('pi-title').value    = "Master's student in Artificial Intelligence";
+  document.getElementById('pi-email').value    = 'baptiste.pras@universite-paris-saclay.fr';
+  document.getElementById('pi-website').value  = 'baptistepras.fr/';
+  document.getElementById('pi-github').value   = 'https://github.com/baptistepras';
+  document.getElementById('pi-linkedin').value = 'https://www.linkedin.com/in/baptiste-pras/';
+
+  // clear current sections
+  state.sections = [];
+  document.getElementById('sections-list').innerHTML = '';
+
+  // education
+  const edu = { id: uid(), type: 'education', name: 'Education', entries: [] };
+  state.sections.push(edu);
+  renderSection(edu);
+  const eduList = document.getElementById(`entries-${edu.id}`);
+
+  [
+    ["Master's degree in Artificial Intelligence", "University Paris-Saclay", "", "Sep 2025 -- Present", "Orsay, France"],
+    ["Magistère in Computer Science (Honors Research Program)", "University Paris-Saclay", "Graduated with Honors", "Sep 2024 -- Aug 2025", "Orsay, France"],
+    ["Double Bachelor's Degree in Computer Science and Mathematics", "University Paris-Saclay", "", "Sep 2022 -- Aug 2024", "Orsay, France"],
+  ].forEach(([degree, institution, note, dateRange, location]) => {
+    const e = { id: uid(), fields: { degree, institution, note, dateRange, location } };
+    edu.entries.push(e);
+    renderEntry(edu.id, e);
+  });
+
+  // publications
+  const pub = { id: uid(), type: 'publication', name: 'Publications', entries: [] };
+  state.sections.push(pub);
+  renderSection(pub);
+  [
+    ["Revisiting Class Imbalance Ratios in Imbalanced Learning", "Junior Conference on Data Science & Engineering, 2025"],
+    ["Fine-Grained Mention-Level Analysis of Biomedical Entity Linking Models", "Medical Informatics Europe, 2026"],
+  ].forEach(([title, venue]) => {
+    const e = { id: uid(), fields: { title, venue } };
+    pub.entries.push(e);
+    renderEntry(pub.id, e);
+  });
+
+  // experience
+  const exp = { id: uid(), type: 'experience', name: 'Professional Experience', entries: [] };
+  state.sections.push(exp);
+  renderSection(exp);
+  [
+    ["Research Internship", "LISN - Laboratoire Interdisciplinaire des Sciences du Numérique",
+     "May 2025 -- Aug 2025", "Orsay, France",
+     "Analyzed biomedical entity linking models on the BELB benchmark, focusing on generalization to rare or complex mentions.",
+     "Nona Naderi (LISN, Université Paris-Saclay)"],
+  ].forEach(([role, org, dateRange, location, description, contact]) => {
+    const e = { id: uid(), fields: { role, org, dateRange, location, description, contact } };
+    exp.entries.push(e);
+    renderEntry(exp.id, e);
+  });
+
+  // skills
+  const sk = { id: uid(), type: 'skills', name: 'Skills', entries: [] };
+  state.sections.push(sk);
+  renderSection(sk);
+  [
+    ["Programming:", "Python (PyTorch, Scikit-Learn, NumPy, Matplotlib), Bash, C/C++, Java, OCaml, SQL"],
+    ["AI:", "Deep Learning, NLP, Computer Vision"],
+    ["Tools:", "LaTeX, Git, Linux, Slurm, Microsoft Office Suite"],
+  ].forEach(([category, items]) => {
+    const e = { id: uid(), fields: { category, items } };
+    sk.entries.push(e);
+    renderEntry(sk.id, e);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════ */
+
+/** Escape HTML for safe insertion into innerHTML. */
+function esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Init: start with one education section ─────────── */
+addSection('education');
+</script>
+</body>
+</html>
