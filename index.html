@@ -909,7 +909,7 @@ function buildLatex() {
   tex += '\\begin{center}\n';
   tex += '    \\cvheadername{' + piLatex('name') + '}\n';
   tex += '    \\cvheadersubtitle{' + piLatex('title') + '}\n\n';
-  tex += '    \\contactline{\n        \\faEnvelope\\ \\href{mailto:' + email + '}{' + emailD + '}';
+  if (email) tex += '    \\contactline{\n        \\faEnvelope\\ \\href{mailto:' + email + '}{' + emailD + '}';
   if (website) tex += '\n        \\hspace{1.2em}\n        \\faLink\\ \\href{https://' + website + '}{' + websiteD + '}';
   if (github)  tex += '\n        \\hspace{1.2em}\n        \\faGithub\\ \\href{' + github + '}{' + githubD + '}';
   tex += '\n    }\n\n';
