@@ -918,7 +918,7 @@ function buildLatex() {
 \\newcommand{\\contactline}[1]{\\vspace{0.8em}{\\normalsize #1\\par}}
 
 \\newcommand{\\eduentry}[5]{%
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
     {\\large\\bfseries #1} & {\\large #4} \\\\
     {\\large\\itshape #2} & {\\large #5} \\\\
     \\if\\relax\\detokenize{#3}\\relax\\else {\\large #3} & \\\\ \\fi
@@ -929,7 +929,7 @@ function buildLatex() {
 
 \\newcommand{\\experienceentry}[6]{%
   \\Needspace{10\\baselineskip}
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
     {\\large\\bfseries #1} & {\\large #3} \\\\
     {\\large\\itshape #2} & {\\large #4} \\\\
   \\end{tabular*}
@@ -941,7 +941,7 @@ function buildLatex() {
 
 \\newcommand{\\experienceentrynocon}[5]{%
   \\Needspace{9\\baselineskip}
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{{\\RaggedLeft\\arraybackslash}}p{0.28\\textwidth}@{}}
+  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
     {\\large\\bfseries #1} & {\\large #3} \\\\
     {\\large\\itshape #2} & {\\large #4} \\\\
   \\end{tabular*}
@@ -1070,42 +1070,47 @@ function downloadLatex() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   PDF COMPILATION (latexonline.cc)
+   PDF COMPILATION (texlive.net)
    ═══════════════════════════════════════════════════════ */
 async function compilePdf() {
   const tex = buildLatex();
   const status = document.getElementById('pdf-status');
 
-  try {
-    // latexonline.cc accepts raw tex via POST to /data
-    const formData = new FormData();
-    const blob = new Blob([tex], { type: 'application/x-tex' });
-    formData.append('file', blob, 'cv.tex');
+  // texlive.net: POST multipart, engine=pdflatex
+  const formData = new FormData();
+  formData.append('filecontents[]', new Blob([tex], { type: 'text/plain' }), 'cv.tex');
+  formData.append('filename[]', 'cv.tex');
+  formData.append('engine', 'pdflatex');
+  formData.append('return', 'pdf');
 
-    const res = await fetch('https://latexonline.cc/data?command=pdflatex', {
+  try {
+    const res = await fetch('https://texlive.net/cgi-bin/latexcgi', {
       method: 'POST',
       body: formData,
     });
 
-    if (!res.ok) throw new Error(`Compilation failed (HTTP ${res.status})`);
-
     const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('pdf')) {
-      // server returned log / error text
-      const text = await res.text();
-      throw new Error('LaTeX error:\n' + text.slice(0, 600));
+
+    if (contentType.includes('pdf')) {
+      pdfBlob = await res.blob();
+      const url = URL.createObjectURL(pdfBlob);
+      const frame = document.getElementById('pdf-frame');
+      frame.src = url;
+      frame.style.display = 'block';
+      document.getElementById('btn-dl-pdf').style.display = 'inline-flex';
+      status.textContent = '';
+    } else {
+      const log = await res.text();
+      // extract first LaTeX error line
+      const errLine = log.split('\n').find(l => l.startsWith('!')) || 'Compilation failed.';
+      throw new Error(errLine);
     }
-
-    pdfBlob = await res.blob();
-    const url = URL.createObjectURL(pdfBlob);
-
-    const frame = document.getElementById('pdf-frame');
-    frame.src = url;
-    frame.style.display = 'block';
-    document.getElementById('btn-dl-pdf').style.display = 'inline-flex';
-    status.textContent = '';
   } catch (err) {
-    status.innerHTML = `<span style="color:var(--danger)">⚠ ${esc(err.message)}</span>`;
+    if (err.name === 'TypeError') {
+      status.innerHTML = `<span style="color:var(--danger)">&#9888; Could not reach texlive.net. Try downloading the .tex and compiling on Overleaf.</span>`;
+    } else {
+      status.innerHTML = `<span style="color:var(--danger)">&#9888; ${esc(err.message)}</span>`;
+    }
   }
 }
 
