@@ -869,113 +869,155 @@ function getPI() {
 function buildLatex() {
   const pi = getPI();
 
-  // preamble
-  let tex = `\\documentclass[10.4pt,a4paper]{article}
+  // Reusable column spec with RaggedLeft — built as plain string to avoid
+  // template-literal backslash interpretation issues (\R, \a are not escape seqs)
+  const colSpec = '>{\RaggedLeft\arraybackslash}';                   // eslint-disable-line
+  const tabCols = '@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}' + colSpec + 'p{0.28\\textwidth}@{}';
+  const tabColsLang = '@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}';
 
-% -------------------------------------------------
-% Packages
-% -------------------------------------------------
-\\usepackage[a4paper,margin=1.4cm]{geometry}
-\\usepackage[T1]{fontenc}
-\\usepackage[utf8]{inputenc}
-\\usepackage{newtxtext,newtxmath}
-\\usepackage{fontawesome5}
-\\usepackage[hidelinks]{hyperref}
-\\usepackage{xcolor}
-\\usepackage{enumitem}
-\\usepackage{tabularx}
-\\usepackage{array}
-\\usepackage{ragged2e}
-\\usepackage{titlesec}
-\\usepackage{setspace}
-\\usepackage{parskip}
-\\usepackage{multicol}
-\\usepackage{needspace}
+  // preamble — use string concatenation so backslashes are never misinterpreted
+  let tex = '';
+  tex += '\\documentclass[10.4pt,a4paper]{article}\n\n';
+  tex += '% -------------------------------------------------\n';
+  tex += '% Packages\n';
+  tex += '% -------------------------------------------------\n';
+  tex += '\\usepackage[a4paper,margin=1.4cm]{geometry}\n';
+  tex += '\\usepackage[T1]{fontenc}\n';
+  tex += '\\usepackage[utf8]{inputenc}\n';
+  tex += '\\usepackage{newtxtext,newtxmath}\n';
+  tex += '\\usepackage{fontawesome5}\n';
+  tex += '\\usepackage[hidelinks]{hyperref}\n';
+  tex += '\\usepackage{xcolor}\n';
+  tex += '\\usepackage{enumitem}\n';
+  tex += '\\usepackage{tabularx}\n';
+  tex += '\\usepackage{array}\n';
+  tex += '\\usepackage{ragged2e}\n';
+  tex += '\\usepackage{titlesec}\n';
+  tex += '\\usepackage{setspace}\n';
+  tex += '\\usepackage{parskip}\n';
+  tex += '\\usepackage{multicol}\n';
+  tex += '\\usepackage{needspace}\n\n';
 
-% -------------------------------------------------
-% Layout
-% -------------------------------------------------
-\\setlength{\\parindent}{0pt}
-\\setlength{\\parskip}{0pt}
-\\setlength{\\tabcolsep}{0pt}
-\\linespread{1.02}
-\\pagestyle{empty}
-\\urlstyle{same}
+  tex += '% -------------------------------------------------\n';
+  tex += '% General layout\n';
+  tex += '% -------------------------------------------------\n';
+  tex += '\\setlength{\\parindent}{0pt}\n';
+  tex += '\\setlength{\\parskip}{0pt}\n';
+  tex += '\\setlength{\\tabcolsep}{0pt}\n';
+  tex += '\\linespread{1.02}\n';
+  tex += '\\pagestyle{empty}\n';
+  tex += '\\urlstyle{same}\n\n';
+  tex += '\\setlist[itemize]{\n';
+  tex += '    leftmargin=1.1em,\n';
+  tex += '    itemsep=0.05em,\n';
+  tex += '    topsep=0.05em,\n';
+  tex += '    parsep=0em,\n';
+  tex += '    partopsep=0em\n';
+  tex += '}\n\n';
+  tex += '\\titleformat{\\section}\n';
+  tex += '  {\\Large\\bfseries}\n';
+  tex += '  {}\n';
+  tex += '  {0pt}\n';
+  tex += '  {\\MakeUppercase}\n';
+  tex += '  [\\vspace{0.15em}\\titlerule]\n\n';
+  tex += '\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}\n\n';
 
-\\setlist[itemize]{
-    leftmargin=1.1em, itemsep=0.05em,
-    topsep=0.05em, parsep=0em, partopsep=0em
-}
+  tex += '% -------------------------------------------------\n';
+  tex += '% Helpers\n';
+  tex += '% -------------------------------------------------\n';
+  tex += '\\newcommand{\\cvheadername}[1]{%\n';
+  tex += '    {\\fontsize{25}{28}\\selectfont\\bfseries #1\\par}\n';
+  tex += '}\n\n';
+  tex += '\\newcommand{\\cvheadersubtitle}[1]{%\n';
+  tex += '    \\vspace{0.35em}\n';
+  tex += '    {\\fontsize{15}{18}\\selectfont\\itshape #1\\par}\n';
+  tex += '}\n\n';
+  tex += '\\newcommand{\\contactline}[1]{%\n';
+  tex += '    \\vspace{0.8em}\n';
+  tex += '    {\\normalsize #1\\par}\n';
+  tex += '}\n\n';
 
-\\titleformat{\\section}{\\Large\\bfseries}{}{0pt}{\\MakeUppercase}[\\vspace{0.15em}\\titlerule]
-\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}
+  // eduentry
+  tex += '\\newcommand{\\eduentry}[5]{%\n';
+  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+  tex += '        {\\large\\bfseries #1} & {\\large #4} \\\\\n';
+  tex += '        {\\large\\itshape #2} & {\\large #5} \\\\\n';
+  tex += '        \\if\\relax\\detokenize{#3}\\relax\n';
+  tex += '        \\else\n';
+  tex += '        {\\large #3} & \\\\\n';
+  tex += '        \\fi\n';
+  tex += '    \\end{tabular*}\n';
+  tex += '    \\vspace{0.15em}\n';
+  tex += '}\n\n';
 
-% -------------------------------------------------
-% Commands
-% -------------------------------------------------
-\\newcommand{\\cvheadername}[1]{{\\fontsize{25}{28}\\selectfont\\bfseries #1\\par}}
-\\newcommand{\\cvheadersubtitle}[1]{\\vspace{0.35em}{\\fontsize{15}{18}\\selectfont\\itshape #1\\par}}
-\\newcommand{\\contactline}[1]{\\vspace{0.8em}{\\normalsize #1\\par}}
+  // pubentry
+  tex += '\\newcommand{\\pubentry}[2]{%\n';
+  tex += '    {\\large\\bfseries #1\\par}\n';
+  tex += '    {\\large\\itshape #2\\par}\n';
+  tex += '    \\vspace{0.45em}\n';
+  tex += '}\n\n';
 
-\\newcommand{\\eduentry}[5]{%
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
-    {\\large\\bfseries #1} & {\\large #4} \\\\
-    {\\large\\itshape #2} & {\\large #5} \\\\
-    \\if\\relax\\detokenize{#3}\\relax\\else {\\large #3} & \\\\ \\fi
-  \\end{tabular*}\\vspace{0.15em}
-}
+  // experienceentry
+  tex += '\\newcommand{\\experienceentry}[6]{%\n';
+  tex += '    \\Needspace{10\\baselineskip}\n';
+  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+  tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n';
+  tex += '        {\\large\\itshape #2} & {\\large #4} \\\\\n';
+  tex += '    \\end{tabular*}\n';
+  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
+  tex += '        \\item {\\large #5}\n';
+  tex += '    \\end{itemize}\n';
+  tex += '    {\\large\\itshape #6\\par}\n';
+  tex += '    \\vspace{0.2em}\n';
+  tex += '}\n\n';
 
-\\newcommand{\\pubentry}[2]{{\\large\\bfseries #1\\par}{\\large\\itshape #2\\par}\\vspace{0.45em}}
+  // experienceentrynocon
+  tex += '\\newcommand{\\experienceentrynocon}[5]{%\n';
+  tex += '    \\Needspace{9\\baselineskip}\n';
+  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+  tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n';
+  tex += '        {\\large\\itshape #2} & {\\large #4} \\\\\n';
+  tex += '    \\end{tabular*}\n';
+  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
+  tex += '        \\item {\\large #5}\n';
+  tex += '    \\end{itemize}\n';
+  tex += '    \\vspace{0.2em}\n';
+  tex += '}\n\n';
 
-\\newcommand{\\experienceentry}[6]{%
-  \\Needspace{10\\baselineskip}
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
-    {\\large\\bfseries #1} & {\\large #3} \\\\
-    {\\large\\itshape #2} & {\\large #4} \\\\
-  \\end{tabular*}
-  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
-    \\item {\\large #5}
-  \\end{itemize}
-  {\\large\\itshape #6\\par}\\vspace{0.2em}
-}
+  // projectentry
+  tex += '\\newcommand{\\projectentry}[3]{%\n';
+  tex += '    {\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}\n';
+  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n';
+  tex += '        \\item {\\large #2}\n';
+  tex += '    \\end{itemize}\n';
+  tex += '    \\vspace{0.1em}\n';
+  tex += '}\n\n';
 
-\\newcommand{\\experienceentrynocon}[5]{%
-  \\Needspace{9\\baselineskip}
-  \\begin{tabular*}{\\textwidth}{@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}>{\RaggedLeft\arraybackslash}p{0.28\\textwidth}@{}}
-    {\\large\\bfseries #1} & {\\large #3} \\\\
-    {\\large\\itshape #2} & {\\large #4} \\\\
-  \\end{tabular*}
-  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
-    \\item {\\large #5}
-  \\end{itemize}\\vspace{0.2em}
-}
+  // skillblock
+  tex += '\\newcommand{\\skillblock}[2]{%\n';
+  tex += '    {\\large\\bfseries #1\\par}\n';
+  tex += '    \\begin{itemize}\n';
+  tex += '        \\item {\\large #2}\n';
+  tex += '    \\end{itemize}\n';
+  tex += '    \\vspace{0.35em}\n';
+  tex += '}\n\n';
 
-\\newcommand{\\projectentry}[3]{{\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}
-  \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]
-    \\item {\\large #2}
-  \\end{itemize}\\vspace{0.1em}
-}
+  tex += '\\begin{document}\n\n';
 
-\\newcommand{\\skillblock}[2]{{\\large\\bfseries #1\\par}
-  \\begin{itemize}\\item {\\large #2}\\end{itemize}\\vspace{0.35em}
-}
-
-\\begin{document}
-
-% -------------------------------------------------
-% Header
-% -------------------------------------------------
-\\begin{center}
-  \\cvheadername{${le(pi.name)}}
-  \\cvheadersubtitle{${le(pi.title)}}
-  \\contactline{
-    \\faEnvelope\\ \\href{mailto:${pi.email}}{${le(pi.email)}}
-    ${pi.website ? `\\hspace{1.2em}\n    \\faLink\\ \\href{https://${pi.website}}{${le(pi.website)}}` : ''}
-    ${pi.github  ? `\\hspace{1.2em}\n    \\faGithub\\ \\href{${pi.github}}{${le(pi.github)}}` : ''}
-  }
-  ${pi.linkedin ? `\\contactline{\\faLinkedin\\ \\href{${pi.linkedin}}{${le(pi.linkedin)}}}` : ''}
-\\end{center}
-`;
+  // header
+  tex += '% -------------------------------------------------\n';
+  tex += '% Header\n';
+  tex += '% -------------------------------------------------\n';
+  tex += '\\begin{center}\n';
+  tex += '    \\cvheadername{' + le(pi.name) + '}\n';
+  tex += '    \\cvheadersubtitle{' + le(pi.title) + '}\n\n';
+  tex += '    \\contactline{\n';
+  tex += '        \\faEnvelope\\ \\href{mailto:' + pi.email + '}{' + le(pi.email) + '}';
+  if (pi.website) tex += '\n        \\hspace{1.2em}\n        \\faLink\\ \\href{https://' + pi.website + '}{' + le(pi.website) + '}';
+  if (pi.github)  tex += '\n        \\hspace{1.2em}\n        \\faGithub\\ \\href{' + pi.github + '}{' + le(pi.github) + '}';
+  tex += '\n    }\n\n';
+  if (pi.linkedin) tex += '    \\contactline{\n        \\faLinkedin\\ \\href{' + pi.linkedin + '}{' + le(pi.linkedin) + '}\n    }\n';
+  tex += '\\end{center}\n';
 
   // sections
   state.sections.forEach(sec => {
@@ -988,38 +1030,61 @@ function buildLatex() {
       const f = entry.fields;
       switch (sec.type) {
         case 'education':
-          tex += `\\eduentry\n  {${le(f.degree)}}\n  {${le(f.institution)}}\n  {${le(f.note)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n\n`;
+          tex += '\\eduentry\n';
+          tex += '{' + le(f.degree) + '}\n';
+          tex += '{' + le(f.institution) + '}\n';
+          tex += '{' + le(f.note) + '}\n';
+          tex += '{' + le(f.dateRange) + '}\n';
+          tex += '{' + le(f.location) + '}\n\n';
           break;
         case 'publication':
-          tex += `\\pubentry\n  {${le(f.title)}}\n  {${le(f.venue)}}\n\n`;
+          tex += '\\pubentry\n';
+          tex += '{' + le(f.title) + '}\n';
+          tex += '{' + le(f.venue) + '}\n\n';
           break;
         case 'experience':
           if (f.contact && f.contact.trim()) {
-            tex += `\\experienceentry\n  {${le(f.role)}}\n  {${le(f.org)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n  {${le(f.description)}}\n  {Contact: ${le(f.contact)}}\n\n`;
+            tex += '\\experienceentry\n';
+            tex += '{' + le(f.role) + '}\n';
+            tex += '{' + le(f.org) + '}\n';
+            tex += '{' + le(f.dateRange) + '}\n';
+            tex += '{' + le(f.location) + '}\n';
+            tex += '{' + le(f.description) + '}\n';
+            tex += '{Contact: ' + le(f.contact) + '}\n\n';
           } else {
-            tex += `\\experienceentrynocon\n  {${le(f.role)}}\n  {${le(f.org)}}\n  {${le(f.dateRange)}}\n  {${le(f.location)}}\n  {${le(f.description)}}\n\n`;
+            tex += '\\experienceentrynocon\n';
+            tex += '{' + le(f.role) + '}\n';
+            tex += '{' + le(f.org) + '}\n';
+            tex += '{' + le(f.dateRange) + '}\n';
+            tex += '{' + le(f.location) + '}\n';
+            tex += '{' + le(f.description) + '}\n\n';
           }
           break;
         case 'project':
-          tex += `\\projectentry\n  {${le(f.title)}}\n  {${le(f.description)}}\n  {${f.url || '#'}}\n\n`;
+          tex += '\\projectentry\n';
+          tex += '{' + le(f.title) + '}\n';
+          tex += '{' + le(f.description) + '}\n';
+          tex += '{' + (f.url || '#') + '}\n\n';
           break;
         case 'skills':
-          tex += `\\skillblock\n  {${le(f.category)}}\n  {${le(f.items)}}\n\n`;
+          tex += '\\skillblock\n';
+          tex += '{' + le(f.category) + '}\n';
+          tex += '{' + le(f.items) + '}\n\n';
           break;
         case 'languages':
-          tex += `{\\large\\bfseries ${le(f.language)}\\par}\n`;
-          tex += `{\\large ${le(f.level)}`;
-          if (f.certs) tex += ` --- ${le(f.certs)}`;
-          tex += `\\par}\n\\vspace{0.6em}\n\n`;
+          tex += '{\\large\\bfseries ' + le(f.language) + '\\par}\n';
+          tex += '{\\large ' + le(f.level);
+          if (f.certs && f.certs.trim()) tex += ' \\\\\n{\\large ' + le(f.certs);
+          tex += '\\par}\n\\vspace{0.6em}\n\n';
           break;
         case 'generic':
         default:
-          tex += `${f.content || ''}\n\n`;
+          tex += (f.content || '') + '\n\n';
       }
     });
   });
 
-  tex += `\n\\end{document}\n`;
+  tex += '\n\\end{document}\n';
   return tex;
 }
 
@@ -1140,67 +1205,122 @@ function loadDemo() {
   document.getElementById('pi-github').value   = 'https://github.com/baptistepras';
   document.getElementById('pi-linkedin').value = 'https://www.linkedin.com/in/baptiste-pras/';
 
-  // clear current sections
   state.sections = [];
   document.getElementById('sections-list').innerHTML = '';
 
-  // education
-  const edu = { id: uid(), type: 'education', name: 'Education', entries: [] };
-  state.sections.push(edu);
-  renderSection(edu);
-  const eduList = document.getElementById(`entries-${edu.id}`);
+  // helper: create section + push entries from array of field objects
+  function mkSection(type, name, rows) {
+    const sec = { id: uid(), type, name, entries: [] };
+    state.sections.push(sec);
+    renderSection(sec);
+    rows.forEach(fields => {
+      const e = { id: uid(), fields };
+      sec.entries.push(e);
+      renderEntry(sec.id, e);
+    });
+  }
 
-  [
-    ["Master's degree in Artificial Intelligence", "University Paris-Saclay", "", "Sep 2025 -- Present", "Orsay, France"],
-    ["Magistère in Computer Science (Honors Research Program)", "University Paris-Saclay", "Graduated with Honors", "Sep 2024 -- Aug 2025", "Orsay, France"],
-    ["Double Bachelor's Degree in Computer Science and Mathematics", "University Paris-Saclay", "", "Sep 2022 -- Aug 2024", "Orsay, France"],
-  ].forEach(([degree, institution, note, dateRange, location]) => {
-    const e = { id: uid(), fields: { degree, institution, note, dateRange, location } };
-    edu.entries.push(e);
-    renderEntry(edu.id, e);
-  });
+  mkSection('education', 'Education', [
+    { degree: "Master's degree in Artificial Intelligence",               institution: 'University Paris-Saclay',  note: '',                       dateRange: 'Sep 2025 -- Present',    location: 'Orsay, France'   },
+    { degree: 'Magistère in Computer Science (Honors Research Program)',  institution: 'University Paris-Saclay',  note: 'Graduated with Honors',  dateRange: 'Sep 2024 -- Aug 2025',   location: 'Orsay, France'   },
+    { degree: "Double Bachelor's Degree in Computer Science and Mathematics", institution: 'University Paris-Saclay', note: '',                    dateRange: 'Sep 2022 -- Aug 2024',   location: 'Orsay, France'   },
+    { degree: 'Intensive English Language Program',                       institution: 'EF New York',              note: 'Achieved C2 Proficiency', dateRange: 'Sep 2019 -- May 2020',  location: 'New York, USA'   },
+  ]);
 
-  // publications
-  const pub = { id: uid(), type: 'publication', name: 'Publications', entries: [] };
-  state.sections.push(pub);
-  renderSection(pub);
-  [
-    ["Revisiting Class Imbalance Ratios in Imbalanced Learning", "Junior Conference on Data Science & Engineering, 2025"],
-    ["Fine-Grained Mention-Level Analysis of Biomedical Entity Linking Models", "Medical Informatics Europe, 2026"],
-  ].forEach(([title, venue]) => {
-    const e = { id: uid(), fields: { title, venue } };
-    pub.entries.push(e);
-    renderEntry(pub.id, e);
-  });
+  mkSection('publication', 'Publications', [
+    { title: 'Revisiting Class Imbalance Ratios in Imbalanced Learning',               venue: 'Junior Conference on Data Science & Engineering, 2025' },
+    { title: 'Fine-Grained Mention-Level Analysis of Biomedical Entity Linking Models', venue: 'Medical Informatics Europe, 2026'                       },
+  ]);
 
-  // experience
-  const exp = { id: uid(), type: 'experience', name: 'Professional Experience', entries: [] };
-  state.sections.push(exp);
-  renderSection(exp);
-  [
-    ["Research Internship", "LISN - Laboratoire Interdisciplinaire des Sciences du Numérique",
-     "May 2025 -- Aug 2025", "Orsay, France",
-     "Analyzed biomedical entity linking models on the BELB benchmark, focusing on generalization to rare or complex mentions.",
-     "Nona Naderi (LISN, Université Paris-Saclay)"],
-  ].forEach(([role, org, dateRange, location, description, contact]) => {
-    const e = { id: uid(), fields: { role, org, dateRange, location, description, contact } };
-    exp.entries.push(e);
-    renderEntry(exp.id, e);
-  });
+  mkSection('experience', 'Professional Experience', [
+    {
+      role: 'Supervised Research Project',
+      org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
+      dateRange: 'Jan 2026 -- Mar 2026', location: 'Orsay, France',
+      description: 'Investigated Biomedical Entity Linking (BEL) strategies to normalize PICO entities (Population, Intervention, Comparison, Outcome) to the MeSH knowledge base. Developed and evaluated a hybrid normalization pipeline, comparing a custom rule-based script (heuristics) with ArboEL (a state-of-the-art graph-based entity linking model).',
+      contact: 'Nona Naderi (LISN, Université Paris-Saclay)',
+    },
+    {
+      role: 'Research Internship',
+      org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
+      dateRange: 'May 2025 -- Aug 2025', location: 'Orsay, France',
+      description: 'Analyzed biomedical entity linking models on the BELB benchmark, focusing on generalization to rare or complex mentions. Developed quantitative and visual analyses of dataset characteristics (mention length, ambiguity, frequency) and their impact on prediction quality. Compared recent models, identified consistent weaknesses, and proposed improvements; published a paper in MIE.',
+      contact: 'Nona Naderi (LISN, Université Paris-Saclay)',
+    },
+    {
+      role: 'Supervised Research Project',
+      org: 'LISN - Laboratoire Interdisciplinaire des Sciences du Numérique',
+      dateRange: 'Jan 2025 -- May 2025', location: 'Orsay, France',
+      description: 'Studied the impact of class imbalance on classification tasks using a spherical Teacher-Student perceptron. Conducted experiments in Python (Scikit-Learn, NumPy, Matplotlib) with different noise levels, loss functions, and training methods (GD, Langevin dynamics). Demonstrated that the optimal imbalance ratio in training sets differs from 0.5 in class-imbalanced problems.',
+      contact: 'François Landes (LISN, Université Paris-Saclay)',
+    },
+    {
+      role: 'Generative AI Trainer',
+      org: 'Outlier / Alignerr',
+      dateRange: 'Jan 2025 -- Present', location: 'Remote',
+      description: 'Designed and refined prompts to enhance the performance of generative AI models. Reviewed and corrected AI-generated outputs to ensure accuracy and quality. Contributed to the continuous improvement of deep learning models through feedback and prompt optimization.',
+      contact: '',
+    },
+  ]);
 
-  // skills
-  const sk = { id: uid(), type: 'skills', name: 'Skills', entries: [] };
-  state.sections.push(sk);
-  renderSection(sk);
-  [
-    ["Programming:", "Python (PyTorch, Scikit-Learn, NumPy, Matplotlib), Bash, C/C++, Java, OCaml, SQL"],
-    ["AI:", "Deep Learning, NLP, Computer Vision"],
-    ["Tools:", "LaTeX, Git, Linux, Slurm, Microsoft Office Suite"],
-  ].forEach(([category, items]) => {
-    const e = { id: uid(), fields: { category, items } };
-    sk.entries.push(e);
-    renderEntry(sk.id, e);
-  });
+  // newpage before projects — use generic section
+  mkSection('generic', '--- Page break ---', [
+    { content: '\\newpage' },
+  ]);
+
+  mkSection('project', 'Projects', [
+    {
+      title: 'Structure Detection in Fusion Plasma Simulations',
+      description: 'Developed a multi-stage detection pipeline featuring a YOLOv8 architecture optimized with a custom MLP post-filter for low-contrast frames, incorporating a pseudo-labeling strategy to expand a limited 30-image dataset and a feature extractor targeting intensity statistics and Sobel gradients.',
+      url: 'https://github.com/baptistepras/Structure-detection-in-fusion-plasma-simulations',
+    },
+    {
+      title: 'Measuring Market Impact of Financial News',
+      description: 'Engineered a computationally efficient framework to transform unstructured financial news into (date, ticker, impact summary) event representations by implementing a hierarchical Map-Reduce summarization architecture with compact Transformers, ensuring numerical fidelity and entity grounding while validating results through a finance-oriented LLM-as-a-judge audit.',
+      url: 'https://github.com/baptistepras/financial-news-impact-prediction',
+    },
+    {
+      title: 'NBA MVP Prediction Model',
+      description: 'Collected and cleaned player and team statistics from publicly available online sources to build a structured dataset. Performed feature selection and engineering, experimenting with different attribute selection strategies. Using several predictive models implemented with Scikit-Learn, achieved an accuracy > 80% in predicting the actual MVP outcome.',
+      url: 'https://github.com/baptistepras/nba_mvp_prediction',
+    },
+    {
+      title: 'Traffic Sign Recognition Model',
+      description: 'Developed a machine learning model to recognize traffic signs from pictures. Implemented preprocessing (normalization, resizing, feature extraction) and trained multiple supervised learning algorithms, reaching over 95% accuracy.',
+      url: 'https://github.com/baptistepras/traffic_sign_recognition',
+    },
+    {
+      title: 'Dual Sudoku AI Agent',
+      description: "Designed an artificial intelligence to solve and play Dual Sudoku by combining search algorithms and heuristic strategies. Implemented efficient state representation and evaluation functions to handle the game's combinatorial complexity.",
+      url: 'https://github.com/baptistepras/AI_DualSudoku',
+    },
+    {
+      title: 'Java-like Interpreter',
+      description: 'Built an interpreter supporting basic arithmetic, classes, methods, and Java-like type checking. Entirely coded in OCaml with Ocamllex and Menhir.',
+      url: 'https://github.com/baptistepras/kawa',
+    },
+  ]);
+
+  // "Other projects" block as generic raw LaTeX
+  mkSection('generic', 'Other Projects (raw LaTeX)', [
+    { content: '{\\large\\bfseries Other projects\\par}\n\\begin{itemize}\n    \\item {\\large Developed various algorithmic implementations (e.g., Graphs, Linked Trees, Quadtrees) and 2D games (e.g., Air Hockey, Labyrinth solver, Colt Express, Worms) across Python, OCaml, Java, and C++.}\n\\end{itemize}' },
+  ]);
+
+  mkSection('skills', 'Skills', [
+    { category: 'Programming:', items: 'Python (PyTorch, Scikit-Learn, NumPy, Matplotlib), Bash, C/C++, Java, OCaml, SQL' },
+    { category: 'Artificial Intelligence:', items: 'Deep Learning, Natural Language Processing, Computer Vision' },
+    { category: 'Tools:', items: 'LaTeX, Git, Linux, Slurm (Cluster Computing), Microsoft Office Suite' },
+  ]);
+
+  // Achievements as generic raw LaTeX to match template exactly
+  mkSection('generic', 'Achievements', [
+    { content: '{\\large\\bfseries Winner of an AI competition by designing the best-performing Dual Sudoku agent\\par}\n\\vspace{0.5em}\n\n{\\large\\bfseries 3x Prologin finalist, a national algorithmic programming contest\\par}\n\\vspace{0.7em}' },
+  ]);
+
+  // Languages as generic raw LaTeX to match the tabular* template exactly
+  mkSection('generic', 'Languages', [
+    { content: '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n    {\\large\\bfseries French} & {\\large\\bfseries English} \\\\\n    {\\large Native} & {\\large Bilingual Proficiency} \\\\\n    & {\\large TOEFL iBT: 108/120} \\\\\n    & {\\large TOEIC: 990/990} \\\\\n    [0.9em]\n    {\\large\\bfseries Russian} & \\\\\n    {\\large Conversational} & \\\\\n\\end{tabular*}' },
+  ]);
 }
 
 /* ═══════════════════════════════════════════════════════
