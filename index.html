@@ -844,6 +844,44 @@ function buildLatex() {
     const rt = v => htmlToLatex(v || '');
     const lp = v => le(v || '');
 
+    // Languages is processed as a whole section (paired tabular layout)
+    if (sec.type === 'languages') {
+      if (sec.entries.length) {
+        tex += '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n';
+        for (let i = 0; i < sec.entries.length; i += 2) {
+          const L = sec.entries[i];
+          const R = sec.entries[i + 1];
+
+          // Extract plain-text certs, splitting on em-dash or en-dash separator
+          const getCerts = (e) => {
+            if (!e?.fields.certs) return [];
+            const el = document.getElementById('ri-' + e.id + '-certs');
+            const raw = el ? el.innerText.trim() : (e.fields.certs || '');
+            return raw.split(/\s*[—–]\s*|\n/).map(s => le(s.trim())).filter(Boolean);
+          };
+
+          const Ln = rt(L.fields.language), Ll = rt(L.fields.level), Lc = getCerts(L);
+          const Rn = R ? rt(R.fields.language) : '';
+          const Rl = R ? rt(R.fields.level) : '';
+          const Rc = R ? getCerts(R) : [];
+
+          // name row (bold)
+          tex += '    {\\large\\bfseries ' + Ln + '} & ' + (Rn ? '{\\large\\bfseries ' + Rn + '}' : '') + ' \\\\\n';
+          // level row
+          tex += '    {\\large ' + Ll + '} & ' + (Rl ? '{\\large ' + Rl + '}' : '') + ' \\\\\n';
+          // cert rows (one per line)
+          const maxC = Math.max(Lc.length, Rc.length);
+          for (let j = 0; j < maxC; j++) {
+            const lc = Lc[j] ? '{\\large ' + Lc[j] + '}' : '';
+            const rc = Rc[j] ? '{\\large ' + Rc[j] + '}' : '';
+            tex += '    ' + lc + ' & ' + rc + ' \\\\\n';
+          }
+          // vertical gap between pairs (not after last)
+          if (i + 2 < sec.entries.length) tex += '    [0.9em]\n';
+        }
+        tex += '\\end{tabular*}\n\n';
+      }
+    } else {
     sec.entries.forEach(entry => {
       const f = entry.fields;
       switch (sec.type) {
@@ -883,26 +921,17 @@ function buildLatex() {
           tex += '\\skillblock\n{' + rt(f.category) + '}\n{' + rt(f.items) + '}\n\n';
           break;
         case 'achievements':
-          // each achievement is automatically large bold
           tex += '{\\large\\bfseries ' + rt(f.text) + '\\par}\n\\vspace{0.5em}\n\n';
-          break;
-        case 'languages':
-          // language name hfilled against level, certs on second line if present
-          tex += '{\\large\\bfseries ' + rt(f.language) + '} \\hfill {\\large ' + rt(f.level) + '}\\par\n';
-          if (f.certs && f.certs.trim()) {
-            tex += '\\hfill {\\large ' + rt(f.certs) + '}\\par\n';
-          }
-          tex += '\\vspace{0.4em}\n\n';
           break;
         case 'generic':
         default: {
-          // wrap plain/rich content in {\large ... \par} so font size matches the rest
           const content = rt(f.content);
           if (content.trim()) tex += '{\\large ' + content + '\\par}\n\n';
           break;
         }
       }
     });
+    } // end non-languages
   });
 
   tex += '\n\\end{document}\n';
@@ -923,12 +952,12 @@ function openPdfModal() {
   document.getElementById('pdf-frame').style.display    = 'none';
   document.getElementById('pdf-frame').src              = '';
   document.getElementById('btn-dl-pdf').style.display   = 'none';
-  document.getElementById('btn-overleaf').style.display = 'none';
+  document.getElementById('btn-overleaf').style.display = 'inline-flex'; // always visible
   document.getElementById('debug-toggle').style.display = 'none';
   document.getElementById('debug-log').textContent      = '';
   document.getElementById('debug-log').classList.remove('visible');
   document.getElementById('pdf-status').innerHTML       =
-    'Compiling via texlive.net\u2026&nbsp;<span class="spinner"></span>';
+    'Compiling\u2026&nbsp;<span class="spinner"></span>';
   document.getElementById('pdf-modal').classList.add('open');
   compilePdf();
 }
@@ -957,43 +986,83 @@ async function compilePdf() {
   const tex    = buildLatex();
   const status = document.getElementById('pdf-status');
   debugLines   = [];
-  dbg('[1] Building FormData...');
+  dbg('[1] Preparing request...');
 
-  const fd = new FormData();
-  fd.append('filecontents[]', new Blob([tex], { type: 'text/plain' }), 'cv.tex');
-  fd.append('filename[]', 'cv.tex');
-  fd.append('engine', 'pdflatex');
-  fd.append('return', 'pdf');
-
+  // Try latex.ytotech.com — JSON API, sends CORS headers
   try {
-    dbg('[2] POST https://texlive.net/cgi-bin/latexcgi');
-    const res = await fetch('https://texlive.net/cgi-bin/latexcgi', { method: 'POST', body: fd });
+    dbg('[2] POST https://latex.ytotech.com/builds/sync (json api)');
+    const res = await fetch('https://latex.ytotech.com/builds/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compiler: 'pdflatex',
+        resources: [{ main: true, content: tex }],
+      }),
+    });
     dbg('[3] HTTP ' + res.status + ' ' + res.statusText);
     const ct = res.headers.get('content-type') || '';
     dbg('[4] Content-Type: ' + ct);
 
-    if (ct.includes('pdf')) {
+    if (res.ok && ct.includes('pdf')) {
       pdfBlob = await res.blob();
-      const url   = URL.createObjectURL(pdfBlob);
+      const url = URL.createObjectURL(pdfBlob);
       const frame = document.getElementById('pdf-frame');
       frame.src = url; frame.style.display = 'block';
       document.getElementById('btn-dl-pdf').style.display   = 'inline-flex';
       document.getElementById('debug-toggle').style.display = 'inline';
       status.textContent = '';
       dbg('[5] OK — ' + (pdfBlob.size / 1024).toFixed(1) + ' KB');
-    } else {
-      const log     = await res.text();
-      const errLine = log.split('\n').find(l => l.startsWith('!')) || 'Compilation failed.';
-      dbg('[5] Non-PDF response. Log:\n' + log.slice(0, 900));
-      throw new Error(errLine);
+      return;
     }
+
+    // non-PDF response = LaTeX error
+    const body = await res.text();
+    dbg('[5] Error body:\n' + body.slice(0, 600));
+    const errLine = body.split('\n').find(l => l.startsWith('!')) || 'Compilation failed (see debug log).';
+    throw new Error(errLine);
+
   } catch (err) {
-    dbg('[ERR] ' + err.name + ': ' + err.message);
-    document.getElementById('debug-toggle').style.display  = 'inline';
-    document.getElementById('btn-overleaf').style.display  = 'inline-flex';
-    status.innerHTML = err.name === 'TypeError'
-      ? '<span style="color:var(--danger)">&#9888; Cannot reach texlive.net. Use <b>Open in Overleaf</b> to compile online.</span>'
-      : '<span style="color:var(--danger)">&#9888; ' + esc(err.message) + '</span>';
+    dbg('[ERR ytotech] ' + err.name + ': ' + err.message);
+
+    if (err.name !== 'TypeError') {
+      // LaTeX error (not network) — show it and stop
+      document.getElementById('debug-toggle').style.display = 'inline';
+      status.innerHTML = '<span style="color:var(--danger)">&#9888; ' + esc(err.message) + '</span>';
+      return;
+    }
+
+    // Network/CORS failure on ytotech — try texlive.net as second attempt
+    dbg('[6] Falling back to texlive.net...');
+    const fd = new FormData();
+    fd.append('filecontents[]', new Blob([tex], { type: 'text/plain' }), 'cv.tex');
+    fd.append('filename[]', 'cv.tex');
+    fd.append('engine', 'pdflatex');
+    fd.append('return', 'pdf');
+    try {
+      const res2 = await fetch('https://texlive.net/cgi-bin/latexcgi', { method: 'POST', body: fd });
+      dbg('[7] texlive.net HTTP ' + res2.status);
+      const ct2 = res2.headers.get('content-type') || '';
+      if (ct2.includes('pdf')) {
+        pdfBlob = await res2.blob();
+        const url = URL.createObjectURL(pdfBlob);
+        const frame = document.getElementById('pdf-frame');
+        frame.src = url; frame.style.display = 'block';
+        document.getElementById('btn-dl-pdf').style.display   = 'inline-flex';
+        document.getElementById('debug-toggle').style.display = 'inline';
+        status.textContent = '';
+        dbg('[8] texlive.net OK — ' + (pdfBlob.size / 1024).toFixed(1) + ' KB');
+      } else {
+        const log = await res2.text();
+        dbg('[8] texlive.net non-PDF:\n' + log.slice(0, 600));
+        throw new Error(log.split('\n').find(l => l.startsWith('!')) || 'texlive.net compilation failed.');
+      }
+    } catch (err2) {
+      dbg('[ERR texlive] ' + err2.name + ': ' + err2.message);
+      document.getElementById('debug-toggle').style.display = 'inline';
+      status.innerHTML =
+        '<span style="color:var(--danger)">&#9888; Both compilation APIs unreachable from this browser. '
+        + 'Click <b>Open in Overleaf</b> to compile online.</span>';
+    }
   }
 }
 
