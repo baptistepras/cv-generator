@@ -266,6 +266,8 @@ a:hover{opacity:.8}
   #topbar h1{display:none}
 }
 </style>
+<script data-goatcounter="https://bpxtst.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 
@@ -394,6 +396,15 @@ a:hover{opacity:.8}
 <script>
 /* ═══ PALETTE ══════════════════════════════════════════ */
 let themeHex = '111111';
+
+function trackEvent(path, title) {
+  if (!window.goatcounter || !window.goatcounter.count) return;
+  window.goatcounter.count({
+    path: path,
+    title: title,
+    event: true
+  });
+}
 
 document.querySelectorAll('.pal').forEach(el => {
   el.addEventListener('click', () => {
@@ -994,11 +1005,13 @@ function buildLatex() {
 
 /* ═══ MODALS ════════════════════════════════════════════ */
 function openLatexModal() {
+  trackEvent('view-latex', 'View LaTeX');
   syncAll();
   document.getElementById('latex-code').textContent = buildLatex();
   document.getElementById('latex-modal').classList.add('open');
 }
 function openPdfModal() {
+  trackEvent('compile-preview', 'Compile & Preview');
   syncAll(); pdfBlob = null;
   document.getElementById('pdf-frame').style.display    = 'none';
   document.getElementById('pdf-frame').src              = '';
@@ -1076,6 +1089,7 @@ async function compilePdf() {
 }
 
 function openOverleaf() {
+  trackEvent('open-overleaf', 'Open in Overleaf');
   syncAll();
   const tex = buildLatex();
 
@@ -1105,10 +1119,26 @@ function openOverleaf() {
   }, 1500);
 }
 
-function downloadPdf() { if (pdfBlob) triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf'); }
-function copyLatex()   { navigator.clipboard.writeText(document.getElementById('latex-code').textContent).then(() => alert('Copied!')); }
+function downloadPdf() {
+  if (pdfBlob) {
+    trackEvent('download-pdf', 'Download PDF');
+    triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf');
+  }
+}
+function copyLatex() {
+  navigator.clipboard.writeText(document.getElementById('latex-code').textContent).then(() => {
+    trackEvent('copy-latex', 'Copy LaTeX');
+    alert('Copied!');
+  });
+}
 function downloadLatex() {
-  triggerDownload(URL.createObjectURL(new Blob([document.getElementById('latex-code').textContent],{type:'text/plain'})), 'cv.tex');
+  trackEvent('download-latex', 'Download LaTeX');
+  triggerDownload(
+    URL.createObjectURL(
+      new Blob([document.getElementById('latex-code').textContent], { type:'text/plain' })
+    ),
+    'cv.tex'
+  );
 }
 function triggerDownload(url, filename) {
   const a = document.createElement('a'); a.href = url; a.download = filename;
