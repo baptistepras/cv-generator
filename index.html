@@ -1,1275 +1,2171 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LaTeX CV Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --bg:#ffffff;--bg2:#f4f4f4;--bg3:#e8e8e8;
-  --border:#cccccc;--border2:#aaaaaa;
-  --text:#111111;--text2:#444444;--text3:#777777;
-  --accent:#111111;--accent-fg:#ffffff;
-  --input-bg:#ffffff;
-  --shadow:0 2px 8px rgba(0,0,0,.10);--shadow-lg:0 6px 24px rgba(0,0,0,.14);
-  --radius:4px;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--danger:#cc2222;
-  --topbar-h:52px;
-  --link:#1a5fa8;
-}
-[data-theme="dark"]{
-  --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;
-  --border:#333333;--border2:#555555;
-  --text:#f0f0f0;--text2:#bbbbbb;--text3:#777777;
-  --accent:#f0f0f0;--accent-fg:#0f0f0f;
-  --input-bg:#1a1a1a;
-  --shadow:0 2px 8px rgba(0,0,0,.40);--shadow-lg:0 6px 24px rgba(0,0,0,.60);
-  --link:#6aabff;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:15px;scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}
-button{cursor:pointer;font-family:var(--sans)}
-input,textarea{font-family:var(--sans)}
-/* all links get a consistent visible color */
-a{color:var(--link)}
-a:hover{opacity:.8}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LaTeX CV Generator</title>
+  <style>
+    /* ── DM Sans ── */
+    @font-face {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 300;
+      font-display: swap;
+      src: url('fonts/dm-sans-v17-latin-300.woff2') format('woff2');
+    }
 
-/* ── topbar ── */
-#topbar{
-  position:sticky;top:0;z-index:200;height:var(--topbar-h);
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;
-  padding:.45rem 1.4rem;background:var(--bg);border-bottom:1.5px solid var(--border);box-shadow:var(--shadow);
-}
-#topbar h1{font-family:var(--mono);font-size:.93rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
-.topbar-right{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
-.palette-bar{display:flex;align-items:center;gap:.28rem}
-.palette-label{font-size:.64rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-right:.08rem}
-.pal{width:1.15rem;height:1.15rem;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0}
-.pal:hover{transform:scale(1.2)}
-.pal.active{border-color:var(--text)}
+    @font-face {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/dm-sans-v17-latin-regular.woff2') format('woff2');
+    }
 
-/* ── buttons ── */
-.btn{
-  display:inline-flex;align-items:center;gap:.35rem;padding:.38rem .8rem;
-  font-size:.79rem;font-weight:600;letter-spacing:.03em;
-  border:1.5px solid var(--border2);border-radius:var(--radius);
-  background:transparent;color:var(--text);
-  transition:background .15s,color .15s,border-color .15s;white-space:nowrap;
-}
-.btn:hover{background:var(--bg3);border-color:var(--text)}
-.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-.btn.primary:hover{opacity:.85}
-/* compile button: same look as any .btn — no special class needed */
-.btn.danger{color:var(--danger);border-color:var(--danger)}
-.btn.danger:hover{background:var(--danger);color:#fff}
-.btn.sm{padding:.22rem .52rem;font-size:.72rem}
-#theme-toggle{
-  width:1.95rem;height:1.95rem;display:flex;align-items:center;justify-content:center;
-  border:1.5px solid var(--border2);border-radius:var(--radius);
-  background:transparent;font-size:.92rem;cursor:pointer;color:var(--text);transition:background .15s;
-}
-#theme-toggle:hover{background:var(--bg3)}
+    @font-face {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url('fonts/dm-sans-v17-latin-500.woff2') format('woff2');
+    }
 
-/* ── page layout ── */
-#page-body{display:flex;align-items:flex-start;max-width:1080px;margin:0 auto}
+    @font-face {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/dm-sans-v17-latin-600.woff2') format('woff2');
+    }
 
-/* ── sidebar (desktop) ── */
-#sidebar{
-  width:155px;flex-shrink:0;
-  position:sticky;top:var(--topbar-h);
-  height:calc(100vh - var(--topbar-h));
-  overflow-y:auto;
-  padding:.8rem .55rem .8rem .7rem;
-  border-right:1.5px solid var(--border);
-}
-#sidebar::-webkit-scrollbar{width:3px}
-#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.sidebar-title{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.55rem;padding:0 .2rem}
-.sidebar-item{display:flex;align-items:center;gap:.18rem;padding:.24rem .28rem;border-radius:var(--radius);margin-bottom:.15rem}
-.sidebar-item:hover{background:var(--bg3)}
-.sidebar-name{flex:1;font-size:.68rem;font-weight:500;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;line-height:1.3}
-.sidebar-name:hover{color:var(--text)}
-.sidebar-item.is-pagebreak .sidebar-name{color:var(--text3);font-style:italic}
-.sidebar-btns{display:flex;gap:1px;flex-shrink:0}
-.sidebar-btn{background:none;border:1px solid var(--border);border-radius:2px;color:var(--text3);font-size:.58rem;padding:1px 3px;cursor:pointer;line-height:1;transition:background .1s,color .1s}
-.sidebar-btn:hover{background:var(--bg3);color:var(--text)}
-.sidebar-btn:disabled{opacity:.2;cursor:not-allowed}
+    /* ── JetBrains Mono ── */
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/jetbrains-mono-v24-latin-regular.woff2') format('woff2');
+    }
 
-/* ── FAB (mobile only, hidden on desktop) ── */
-#fab-btn{
-  display:none;
-  position:fixed;bottom:5rem;right:1rem;
-  width:44px;height:44px;border-radius:50%;
-  background:var(--bg3);color:var(--text);
-  border:1.5px solid var(--border2);font-size:1.15rem;
-  align-items:center;justify-content:center;cursor:pointer;
-  z-index:150;box-shadow:var(--shadow-lg);transition:background .15s;
-}
-#fab-btn:hover{background:var(--border)}
-/* Mobile overlay */
-#mob-overlay{
-  display:none;position:fixed;inset:0;z-index:400;
-}
-#mob-overlay.open{display:block}
-#mob-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-#mob-panel{
-  position:absolute;bottom:5.5rem;right:1rem;
-  width:190px;max-height:55vh;overflow-y:auto;
-  background:var(--bg2);border:1.5px solid var(--border);
-  border-radius:var(--radius);padding:.7rem .6rem;
-  box-shadow:var(--shadow-lg);
-}
-#mob-panel .sidebar-title{margin-bottom:.45rem}
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/jetbrains-mono-v24-latin-600.woff2') format('woff2');
+    }
 
-/* ── main ── */
-#app{flex:1;min-width:0;padding:1.4rem 1.4rem 7rem}
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('fonts/jetbrains-mono-v24-latin-700.woff2') format('woff2');
+    }
 
-/* ── personal block ── */
-.personal-block{border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;margin-bottom:1.4rem;background:var(--bg2)}
-.personal-block h2{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.8rem}
-.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .85rem}
-.field-group{display:flex;flex-direction:column;gap:0}
-.field-group label{font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
+    :root {
+      --bg: #ffffff;
+      --bg2: #f4f4f4;
+      --bg3: #e8e8e8;
+      --border: #cccccc;
+      --border2: #aaaaaa;
+      --text: #111111;
+      --text2: #444444;
+      --text3: #777777;
+      --accent: #111111;
+      --accent-fg: #ffffff;
+      --input-bg: #ffffff;
+      --shadow: 0 2px 8px rgba(0, 0, 0, .10);
+      --shadow-lg: 0 6px 24px rgba(0, 0, 0, .14);
+      --radius: 4px;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --danger: #cc2222;
+      --topbar-h: 52px;
+      --link: #1a5fa8;
+    }
 
-/* ── sections ── */
-#sections-list{display:flex;flex-direction:column;gap:1rem}
-.section-card{border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg2);overflow:hidden;transition:box-shadow .15s,border-color .15s}
-.section-card.drag-over,.pagebreak-card.drag-over{border-color:var(--border2);box-shadow:var(--shadow-lg);outline:2px dashed var(--border2)}
-.section-header{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;border-bottom:1.5px solid var(--border);background:var(--bg3);user-select:none}
-.section-drag-handle{font-size:.95rem;color:var(--text3);cursor:grab;padding:.1rem .22rem;border-radius:2px}
-.section-drag-handle:active{cursor:grabbing}
-.section-drag-handle:hover{color:var(--text2)}
-.section-name{flex:1;font-family:var(--mono);font-size:.76rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text);background:transparent;border:none;outline:none}
-.section-name:focus{background:var(--input-bg);border-bottom:1.5px solid var(--border2);padding:0 .28rem}
-.section-actions{display:flex;gap:.3rem;margin-left:auto}
-.section-body{padding:.85rem .85rem .65rem}
-.section-type-label{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-left:.22rem}
-.pagebreak-card{border:1.5px dashed var(--border2);border-radius:var(--radius);background:var(--bg2);overflow:hidden}
-.pagebreak-header{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;background:var(--bg3);user-select:none}
-.pagebreak-label{flex:1;font-family:var(--mono);font-size:.76rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+    [data-theme="dark"] {
+      --bg: #0f0f0f;
+      --bg2: #1a1a1a;
+      --bg3: #242424;
+      --border: #333333;
+      --border2: #555555;
+      --text: #f0f0f0;
+      --text2: #bbbbbb;
+      --text3: #777777;
+      --accent: #f0f0f0;
+      --accent-fg: #0f0f0f;
+      --input-bg: #1a1a1a;
+      --shadow: 0 2px 8px rgba(0, 0, 0, .40);
+      --shadow-lg: 0 6px 24px rgba(0, 0, 0, .60);
+      --link: #6aabff;
+    }
 
-/* ── entries ── */
-.entries-list{display:flex;flex-direction:column;gap:.55rem}
-.entry-card{border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg);overflow:hidden}
-.entry-card.drag-over{outline:2px dashed var(--border2)}
-.entry-header{display:flex;align-items:center;gap:.42rem;padding:.38rem .6rem;background:var(--bg2);border-bottom:1.5px solid var(--border);cursor:pointer;user-select:none}
-.entry-drag-handle{font-size:.88rem;color:var(--text3);cursor:grab}
-.entry-drag-handle:active{cursor:grabbing}
-.entry-title-preview{flex:1;font-size:.76rem;font-weight:500;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.entry-toggle{font-size:.76rem;color:var(--text3);transition:transform .2s}
-.entry-toggle.open{transform:rotate(180deg)}
-.entry-body{padding:.6rem .7rem;display:none}
-.entry-body.open{display:block}
-.entry-fields{display:flex;flex-direction:column;gap:.48rem}
-.entry-field{display:flex;flex-direction:column;gap:0}
-.entry-field label{font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
-/* plain <input> inside entry-field (URLs etc.) — override browser defaults explicitly */
-.entry-field input[type="text"]{
-  background:var(--input-bg)!important;
-  color:var(--text)!important;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  padding:.33rem .5rem;
-  font-size:.85rem;
-  outline:none;
-  width:100%;
-  transition:border-color .15s;
-  /* prevent browser autofill from overriding colors */
-  -webkit-text-fill-color:var(--text)!important;
-  box-shadow:0 0 0 100px var(--input-bg) inset!important;
-}
-.entry-field input[type="text"]:focus{border-color:var(--border2)}
-.entry-footer{display:flex;justify-content:flex-end;padding:.4rem .7rem;border-top:1.5px solid var(--border);background:var(--bg2)}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── rich toolbar ── */
-.rich-toolbar{
-  display:flex;align-items:center;gap:2px;flex-wrap:wrap;
-  background:var(--bg3);border:1.5px solid var(--border);border-bottom:none;
-  border-radius:var(--radius) var(--radius) 0 0;padding:2px 4px;
-}
-.rtb{padding:2px 6px;font-size:.74rem;font-weight:700;line-height:1.5;border:1px solid var(--border2);border-radius:2px;background:var(--bg2);color:var(--text);cursor:pointer;transition:background .1s;user-select:none}
-.rtb:hover{background:var(--border)}
-.color-swatch{width:.95rem;height:.95rem;border-radius:3px;border:1.5px solid rgba(128,128,128,.35);cursor:pointer;transition:transform .1s,border-color .1s;flex-shrink:0;display:inline-block;user-select:none}
-.color-swatch:hover{transform:scale(1.22);border-color:var(--text)}
-.toolbar-sep{width:1px;height:.95rem;background:var(--border2);margin:0 2px;flex-shrink:0}
+    html {
+      font-size: 15px;
+      scroll-behavior: smooth
+    }
 
-/* ── rich editor ── */
-.rich-editor{
-  background:var(--input-bg);border:1.5px solid var(--border);border-radius:0 0 var(--radius) var(--radius);
-  color:var(--text);padding:.33rem .5rem;font-size:.85rem;outline:none;width:100%;cursor:text;
-  transition:border-color .15s;line-height:1.55;word-break:break-word;
-}
-.rich-editor:focus{border-color:var(--border2)}
-.rich-editor.short{min-height:26px;white-space:nowrap;overflow:hidden}
-.rich-editor.long{min-height:62px}
-.rich-editor b,.rich-editor strong{font-weight:700}
-.rich-editor i,.rich-editor em{font-style:italic}
-.rich-editor u{text-decoration:underline}
-.rich-editor ul{list-style:disc;padding-left:1.3em;margin:.15em 0}
-.rich-editor li{margin:.08em 0}
-/* links inside editors get the same consistent color */
-.rich-editor a{color:var(--link)}
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .25s, color .25s
+    }
 
-/* ── add rows ── */
-.add-entry-row{margin-top:.5rem;display:flex;justify-content:center}
-#add-section-bar{margin-top:1rem;display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap}
+    button {
+      cursor: pointer;
+      font-family: var(--sans)
+    }
 
-/* ── action bar ── */
-#action-bar{
-  position:fixed;bottom:0;left:0;right:0;
-  display:flex;justify-content:center;gap:.7rem;align-items:center;
-  padding:.75rem 2rem;background:var(--bg);
-  border-top:1.5px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.15);z-index:100;
-}
+    input,
+    textarea {
+      font-family: var(--sans)
+    }
 
-/* ── credits ── */
-#credits{text-align:center;padding:.5rem 1rem;font-size:.68rem;color:var(--text3);border-top:1px solid var(--border);margin-top:.85rem}
+    /* all links get a consistent visible color */
+    a {
+      color: var(--link)
+    }
 
-/* ── modals ── */
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center}
-.modal-backdrop.open{display:flex}
-.modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);width:min(92vw,800px);max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;border-bottom:1.5px solid var(--border);background:var(--bg3)}
-.modal-header h3{font-family:var(--mono);font-size:.8rem;font-weight:700;letter-spacing:.07em}
-.modal-body{flex:1;overflow:auto;padding:.95rem}
-.modal-footer{display:flex;justify-content:flex-end;gap:.5rem;padding:.65rem 1rem;border-top:1.5px solid var(--border);background:var(--bg3)}
-.form-field{display:flex;flex-direction:column;gap:.22rem;margin-bottom:.6rem}
-.form-field label{font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
-.form-field input,.form-field textarea,.form-field select{background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);padding:.38rem .52rem;font-size:.84rem;outline:none;transition:border-color .15s;width:100%;font-family:var(--sans)}
-.form-field input:focus,.form-field textarea:focus,.form-field select:focus{border-color:var(--border2)}
-.form-field textarea{min-height:78px;resize:vertical}
-.form-disclaimer{font-size:.65rem;color:var(--text3);line-height:1.5;margin-top:.45rem;padding-top:.4rem;border-top:1px solid var(--border)}
-.form-disclaimer a{color:var(--link)}
-#bug-status{font-size:.78rem;text-align:center;padding:.22rem 0}
-#latex-code{font-family:var(--mono);font-size:.73rem;line-height:1.65;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.85rem;white-space:pre;overflow:auto;color:var(--text);max-height:60vh}
-#pdf-frame{width:100%;height:53vh;border:1.5px solid var(--border);border-radius:var(--radius);background:#fff}
-#pdf-status{font-size:.83rem;color:var(--text2);padding:.42rem 0;text-align:center}
-#debug-log{font-family:var(--mono);font-size:.68rem;line-height:1.55;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.52rem .72rem;white-space:pre-wrap;overflow:auto;color:var(--text3);max-height:115px;margin-top:.52rem;display:none}
-#debug-log.visible{display:block}
-#debug-toggle{font-size:.68rem;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:.22rem 0;display:none}
-.spinner{display:inline-block;width:1em;height:1em;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    a:hover {
+      opacity: .8
+    }
 
-/* ── responsive ── */
-@media(max-width:700px){
-  #sidebar{display:none}
-  #fab-btn{display:flex}
-  #page-body{display:block}
-  #app{padding:1rem .85rem 7rem}
-  .field-grid{grid-template-columns:1fr}
-  #add-section-bar .btn{width:100%;justify-content:center}
-  #topbar{padding:.45rem .85rem}
-  #topbar h1{display:none}
-}
-</style>
-<script data-goatcounter="https://bpxtst.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    /* ── topbar ── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      height: var(--topbar-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .4rem;
+      padding: .45rem 1.4rem;
+      background: var(--bg);
+      border-bottom: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    #topbar h1 {
+      font-family: var(--mono);
+      font-size: .93rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      white-space: nowrap
+    }
+
+    .topbar-right {
+      display: flex;
+      gap: .4rem;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .palette-bar {
+      display: flex;
+      align-items: center;
+      gap: .28rem
+    }
+
+    .palette-label {
+      font-size: .64rem;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-right: .08rem
+    }
+
+    .pal {
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s;
+      flex-shrink: 0
+    }
+
+    .pal:hover {
+      transform: scale(1.2)
+    }
+
+    .pal.active {
+      border-color: var(--text)
+    }
+
+    /* ── buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .38rem .8rem;
+      font-size: .79rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text);
+      transition: background .15s, color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--bg3);
+      border-color: var(--text)
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent)
+    }
+
+    .btn.primary:hover {
+      opacity: .85
+    }
+
+    /* compile button: same look as any .btn — no special class needed */
+    .btn.danger {
+      color: var(--danger);
+      border-color: var(--danger)
+    }
+
+    .btn.danger:hover {
+      background: var(--danger);
+      color: #fff
+    }
+
+    .btn.sm {
+      padding: .22rem .52rem;
+      font-size: .72rem
+    }
+
+    #theme-toggle {
+      width: 1.95rem;
+      height: 1.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius);
+      background: transparent;
+      font-size: .92rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: background .15s;
+    }
+
+    #theme-toggle:hover {
+      background: var(--bg3)
+    }
+
+    /* ── page layout ── */
+    #page-body {
+      display: flex;
+      align-items: flex-start;
+      max-width: 1080px;
+      margin: 0 auto
+    }
+
+    /* ── sidebar (desktop) ── */
+    #sidebar {
+      width: 155px;
+      flex-shrink: 0;
+      position: sticky;
+      top: var(--topbar-h);
+      height: calc(100vh - var(--topbar-h));
+      overflow-y: auto;
+      padding: .8rem .55rem .8rem .7rem;
+      border-right: 1.5px solid var(--border);
+    }
+
+    #sidebar::-webkit-scrollbar {
+      width: 3px
+    }
+
+    #sidebar::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px
+    }
+
+    .sidebar-title {
+      font-family: var(--mono);
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .55rem;
+      padding: 0 .2rem
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: .18rem;
+      padding: .24rem .28rem;
+      border-radius: var(--radius);
+      margin-bottom: .15rem
+    }
+
+    .sidebar-item:hover {
+      background: var(--bg3)
+    }
+
+    .sidebar-name {
+      flex: 1;
+      font-size: .68rem;
+      font-weight: 500;
+      color: var(--text2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      line-height: 1.3
+    }
+
+    .sidebar-name:hover {
+      color: var(--text)
+    }
+
+    .sidebar-item.is-pagebreak .sidebar-name {
+      color: var(--text3);
+      font-style: italic
+    }
+
+    .sidebar-btns {
+      display: flex;
+      gap: 1px;
+      flex-shrink: 0
+    }
+
+    .sidebar-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text3);
+      font-size: .58rem;
+      padding: 1px 3px;
+      cursor: pointer;
+      line-height: 1;
+      transition: background .1s, color .1s
+    }
+
+    .sidebar-btn:hover {
+      background: var(--bg3);
+      color: var(--text)
+    }
+
+    .sidebar-btn:disabled {
+      opacity: .2;
+      cursor: not-allowed
+    }
+
+    /* ── FAB (mobile only, hidden on desktop) ── */
+    #fab-btn {
+      display: none;
+      position: fixed;
+      bottom: 5rem;
+      right: 1rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1.5px solid var(--border2);
+      font-size: 1.15rem;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 150;
+      box-shadow: var(--shadow-lg);
+      transition: background .15s;
+    }
+
+    #fab-btn:hover {
+      background: var(--border)
+    }
+
+    /* Mobile overlay */
+    #mob-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+    }
+
+    #mob-overlay.open {
+      display: block
+    }
+
+    #mob-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .45)
+    }
+
+    #mob-panel {
+      position: absolute;
+      bottom: 5.5rem;
+      right: 1rem;
+      width: 190px;
+      max-height: 55vh;
+      overflow-y: auto;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: .7rem .6rem;
+      box-shadow: var(--shadow-lg);
+    }
+
+    #mob-panel .sidebar-title {
+      margin-bottom: .45rem
+    }
+
+    /* ── main ── */
+    #app {
+      flex: 1;
+      min-width: 0;
+      padding: 1.4rem 1.4rem 7rem
+    }
+
+    /* ── personal block ── */
+    .personal-block {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.4rem;
+      background: var(--bg2)
+    }
+
+    .personal-block h2 {
+      font-family: var(--mono);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .8rem
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem .85rem
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .field-group label {
+      font-size: .66rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .2rem
+    }
+
+    /* ── sections ── */
+    #sections-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .section-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg2);
+      overflow: hidden;
+      transition: box-shadow .15s, border-color .15s
+    }
+
+    .section-card.drag-over,
+    .pagebreak-card.drag-over {
+      border-color: var(--border2);
+      box-shadow: var(--shadow-lg);
+      outline: 2px dashed var(--border2)
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem .85rem;
+      border-bottom: 1.5px solid var(--border);
+      background: var(--bg3);
+      user-select: none
+    }
+
+    .section-drag-handle {
+      font-size: .95rem;
+      color: var(--text3);
+      cursor: grab;
+      padding: .1rem .22rem;
+      border-radius: 2px
+    }
+
+    .section-drag-handle:active {
+      cursor: grabbing
+    }
+
+    .section-drag-handle:hover {
+      color: var(--text2)
+    }
+
+    .section-name {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none
+    }
+
+    .section-name:focus {
+      background: var(--input-bg);
+      border-bottom: 1.5px solid var(--border2);
+      padding: 0 .28rem
+    }
+
+    .section-actions {
+      display: flex;
+      gap: .3rem;
+      margin-left: auto
+    }
+
+    .section-body {
+      padding: .85rem .85rem .65rem
+    }
+
+    .section-type-label {
+      font-size: .62rem;
+      font-weight: 600;
+      color: var(--text3);
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-left: .22rem
+    }
+
+    .pagebreak-card {
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--radius);
+      background: var(--bg2);
+      overflow: hidden
+    }
+
+    .pagebreak-header {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem .85rem;
+      background: var(--bg3);
+      user-select: none
+    }
+
+    .pagebreak-label {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text3)
+    }
+
+    /* ── entries ── */
+    .entries-list {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem
+    }
+
+    .entry-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      overflow: hidden
+    }
+
+    .entry-card.drag-over {
+      outline: 2px dashed var(--border2)
+    }
+
+    .entry-header {
+      display: flex;
+      align-items: center;
+      gap: .42rem;
+      padding: .38rem .6rem;
+      background: var(--bg2);
+      border-bottom: 1.5px solid var(--border);
+      cursor: pointer;
+      user-select: none
+    }
+
+    .entry-drag-handle {
+      font-size: .88rem;
+      color: var(--text3);
+      cursor: grab
+    }
+
+    .entry-drag-handle:active {
+      cursor: grabbing
+    }
+
+    .entry-title-preview {
+      flex: 1;
+      font-size: .76rem;
+      font-weight: 500;
+      color: var(--text2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .entry-toggle {
+      font-size: .76rem;
+      color: var(--text3);
+      transition: transform .2s
+    }
+
+    .entry-toggle.open {
+      transform: rotate(180deg)
+    }
+
+    .entry-body {
+      padding: .6rem .7rem;
+      display: none
+    }
+
+    .entry-body.open {
+      display: block
+    }
+
+    .entry-fields {
+      display: flex;
+      flex-direction: column;
+      gap: .48rem
+    }
+
+    .entry-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .entry-field label {
+      font-size: .63rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .2rem
+    }
+
+    /* plain <input> inside entry-field (URLs etc.) — override browser defaults explicitly */
+    .entry-field input[type="text"] {
+      background: var(--input-bg) !important;
+      color: var(--text) !important;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: .33rem .5rem;
+      font-size: .85rem;
+      outline: none;
+      width: 100%;
+      transition: border-color .15s;
+      /* prevent browser autofill from overriding colors */
+      -webkit-text-fill-color: var(--text) !important;
+      box-shadow: 0 0 0 100px var(--input-bg) inset !important;
+    }
+
+    .entry-field input[type="text"]:focus {
+      border-color: var(--border2)
+    }
+
+    .entry-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: .4rem .7rem;
+      border-top: 1.5px solid var(--border);
+      background: var(--bg2)
+    }
+
+    /* ── rich toolbar ── */
+    .rich-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-wrap: wrap;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 2px 4px;
+    }
+
+    .rtb {
+      padding: 2px 6px;
+      font-size: .74rem;
+      font-weight: 700;
+      line-height: 1.5;
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      background: var(--bg2);
+      color: var(--text);
+      cursor: pointer;
+      transition: background .1s;
+      user-select: none
+    }
+
+    .rtb:hover {
+      background: var(--border)
+    }
+
+    .color-swatch {
+      width: .95rem;
+      height: .95rem;
+      border-radius: 3px;
+      border: 1.5px solid rgba(128, 128, 128, .35);
+      cursor: pointer;
+      transition: transform .1s, border-color .1s;
+      flex-shrink: 0;
+      display: inline-block;
+      user-select: none
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.22);
+      border-color: var(--text)
+    }
+
+    .toolbar-sep {
+      width: 1px;
+      height: .95rem;
+      background: var(--border2);
+      margin: 0 2px;
+      flex-shrink: 0
+    }
+
+    /* ── rich editor ── */
+    .rich-editor {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      color: var(--text);
+      padding: .33rem .5rem;
+      font-size: .85rem;
+      outline: none;
+      width: 100%;
+      cursor: text;
+      transition: border-color .15s;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .rich-editor:focus {
+      border-color: var(--border2)
+    }
+
+    .rich-editor.short {
+      min-height: 26px;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .rich-editor.long {
+      min-height: 62px
+    }
+
+    .rich-editor b,
+    .rich-editor strong {
+      font-weight: 700
+    }
+
+    .rich-editor i,
+    .rich-editor em {
+      font-style: italic
+    }
+
+    .rich-editor u {
+      text-decoration: underline
+    }
+
+    .rich-editor ul {
+      list-style: disc;
+      padding-left: 1.3em;
+      margin: .15em 0
+    }
+
+    .rich-editor li {
+      margin: .08em 0
+    }
+
+    /* links inside editors get the same consistent color */
+    .rich-editor a {
+      color: var(--link)
+    }
+
+    /* ── add rows ── */
+    .add-entry-row {
+      margin-top: .5rem;
+      display: flex;
+      justify-content: center
+    }
+
+    #add-section-bar {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+      flex-wrap: wrap
+    }
+
+    /* ── action bar ── */
+    #action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: .7rem;
+      align-items: center;
+      padding: .75rem 2rem;
+      background: var(--bg);
+      border-top: 1.5px solid var(--border);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, .15);
+      z-index: 100;
+    }
+
+    /* ── credits ── */
+    #credits {
+      text-align: center;
+      padding: .5rem 1rem;
+      font-size: .68rem;
+      color: var(--text3);
+      border-top: 1px solid var(--border);
+      margin-top: .85rem
+    }
+
+    /* ── modals ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .55);
+      z-index: 500;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-backdrop.open {
+      display: flex
+    }
+
+    .modal {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      width: min(92vw, 800px);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg)
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .65rem 1rem;
+      border-bottom: 1.5px solid var(--border);
+      background: var(--bg3)
+    }
+
+    .modal-header h3 {
+      font-family: var(--mono);
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .07em
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: .95rem
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      padding: .65rem 1rem;
+      border-top: 1.5px solid var(--border);
+      background: var(--bg3)
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: .22rem;
+      margin-bottom: .6rem
+    }
+
+    .form-field label {
+      font-size: .66rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3)
+    }
+
+    .form-field input,
+    .form-field textarea,
+    .form-field select {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: .38rem .52rem;
+      font-size: .84rem;
+      outline: none;
+      transition: border-color .15s;
+      width: 100%;
+      font-family: var(--sans)
+    }
+
+    .form-field input:focus,
+    .form-field textarea:focus,
+    .form-field select:focus {
+      border-color: var(--border2)
+    }
+
+    .form-field textarea {
+      min-height: 78px;
+      resize: vertical
+    }
+
+    .form-disclaimer {
+      font-size: .65rem;
+      color: var(--text3);
+      line-height: 1.5;
+      margin-top: .45rem;
+      padding-top: .4rem;
+      border-top: 1px solid var(--border)
+    }
+
+    .form-disclaimer a {
+      color: var(--link)
+    }
+
+    #bug-status {
+      font-size: .78rem;
+      text-align: center;
+      padding: .22rem 0
+    }
+
+    #latex-code {
+      font-family: var(--mono);
+      font-size: .73rem;
+      line-height: 1.65;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: .85rem;
+      white-space: pre;
+      overflow: auto;
+      color: var(--text);
+      max-height: 60vh
+    }
+
+    #pdf-frame {
+      width: 100%;
+      height: 53vh;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff
+    }
+
+    #pdf-status {
+      font-size: .83rem;
+      color: var(--text2);
+      padding: .42rem 0;
+      text-align: center
+    }
+
+    #debug-log {
+      font-family: var(--mono);
+      font-size: .68rem;
+      line-height: 1.55;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: .52rem .72rem;
+      white-space: pre-wrap;
+      overflow: auto;
+      color: var(--text3);
+      max-height: 115px;
+      margin-top: .52rem;
+      display: none
+    }
+
+    #debug-log.visible {
+      display: block
+    }
+
+    #debug-toggle {
+      font-size: .68rem;
+      color: var(--text3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: .22rem 0;
+      display: none
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      border: 2px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg2)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px
+    }
+
+    /* ── responsive ── */
+    @media(max-width:700px) {
+      #sidebar {
+        display: none
+      }
+
+      #fab-btn {
+        display: flex
+      }
+
+      #page-body {
+        display: block
+      }
+
+      #app {
+        padding: 1rem .85rem 7rem
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr
+      }
+
+      #add-section-bar .btn {
+        width: 100%;
+        justify-content: center
+      }
+
+      #topbar {
+        padding: .45rem .85rem
+      }
+
+      #topbar h1 {
+        display: none
+      }
+    }
+  </style>
+  <script data-goatcounter="https://bpxtst.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
+
 <body>
 
-<div id="topbar">
-  <h1>&#11035; CV GENERATOR</h1>
-  <div class="topbar-right">
-    <div class="palette-bar">
-      <span class="palette-label">Color</span>
-      <span class="pal active" data-hex="111111" style="background:#111111" title="Midnight"></span>
-      <span class="pal" data-hex="1a3a6e" style="background:#1a3a6e" title="Navy"></span>
-      <span class="pal" data-hex="1e5e3a" style="background:#1e5e3a" title="Forest"></span>
-      <span class="pal" data-hex="8b1a1a" style="background:#8b1a1a" title="Crimson"></span>
-      <span class="pal" data-hex="5b3a8e" style="background:#5b3a8e" title="Plum"></span>
-    </div>
-    <button class="btn sm" id="btn-load-demo">Load example</button>
-    <button class="btn sm" id="btn-bug">&#128030; Report</button>
-    <button id="theme-toggle" title="Toggle theme">&#9728;</button>
-  </div>
-</div>
-
-<div id="page-body">
-  <!-- Desktop sidebar -->
-  <aside id="sidebar">
-    <div class="sidebar-title">Sections</div>
-    <div id="sidebar-list"></div>
-  </aside>
-
-  <!-- Main -->
-  <main id="app">
-    <div class="personal-block">
-      <h2>Personal Info</h2>
-      <div class="field-grid" id="pi-grid"></div>
-    </div>
-    <div id="sections-list"></div>
-    <div id="add-section-bar">
-      <button class="btn" onclick="addSection('education')">+ Education</button>
-      <button class="btn" onclick="addSection('experience')">+ Experience</button>
-      <button class="btn" onclick="addSection('publication')">+ Publications</button>
-      <button class="btn" onclick="addSection('project')">+ Projects</button>
-      <button class="btn" onclick="addSection('skills')">+ Skills</button>
-      <button class="btn" onclick="addSection('achievements')">+ Achievements</button>
-      <button class="btn" onclick="addSection('languages')">+ Languages</button>
-      <button class="btn" onclick="addSection('generic')">+ Generic</button>
-      <button class="btn" onclick="addSection('pagebreak')">&#8629; Page break</button>
-    </div>
-    <div id="credits">
-      &copy; 2025 <a href="https://baptistepras.fr/" target="_blank">Baptiste PRAS</a>. LaTeX CV Generator, free to use for noncommercial purposes. Hosted by <a href="https://pages.github.com" target="_blank">GitHub Pages</a> (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA, +1 415 735 4488). Visits are counted with <a href="https://www.goatcounter.com" target="_blank">GoatCounter</a>, without cookies. PDF compilation sends your LaTeX source to latex.ytotech.com (texlive.net as a fallback). Nothing you enter is stored by this site.
-    </div>
-  </main>
-</div>
-
-<!-- Mobile FAB -->
-<button id="fab-btn" onclick="toggleMobSidebar()" title="Sections">&#8801;</button>
-
-<!-- Mobile overlay -->
-<div id="mob-overlay">
-  <div id="mob-backdrop" onclick="toggleMobSidebar()"></div>
-  <div id="mob-panel">
-    <div class="sidebar-title">Sections</div>
-    <div id="mob-sidebar-list"></div>
-  </div>
-</div>
-
-<!-- Action bar -->
-<div id="action-bar">
-  <button class="btn" onclick="openLatexModal()">&#128196; View LaTeX</button>
-  <button class="btn" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
-</div>
-
-<!-- LaTeX modal -->
-<div class="modal-backdrop" id="latex-modal">
-  <div class="modal">
-    <div class="modal-header"><h3>LATEX SOURCE</h3><button class="btn sm" onclick="closeModal('latex-modal')">&#10005; Close</button></div>
-    <div class="modal-body"><pre id="latex-code"></pre></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="copyLatex()">&#128203; Copy</button>
-      <button class="btn" onclick="downloadLatex()">&#8595; Download .tex</button>
-    </div>
-  </div>
-</div>
-
-<!-- PDF modal -->
-<div class="modal-backdrop" id="pdf-modal">
-  <div class="modal">
-    <div class="modal-header"><h3>PDF PREVIEW</h3><button class="btn sm" onclick="closeModal('pdf-modal')">&#10005; Close</button></div>
-    <div class="modal-body">
-      <div id="pdf-status"></div>
-      <iframe id="pdf-frame" style="display:none"></iframe>
-      <button id="debug-toggle" onclick="toggleDebug()">&#9658; Debug log</button>
-      <pre id="debug-log"></pre>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
-      <button class="btn" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
-    </div>
-  </div>
-</div>
-
-<!-- Bug / Feature modal -->
-<div class="modal-backdrop" id="bug-modal">
-  <div class="modal" style="max-width:490px">
-    <div class="modal-header"><h3>REPORT A BUG / REQUEST A FEATURE</h3><button class="btn sm" onclick="closeModal('bug-modal')">&#10005; Close</button></div>
-    <div class="modal-body">
-      <div class="form-field"><label>Your name</label><input type="text" id="bug-name" placeholder="Optional"/></div>
-      <div class="form-field"><label>Your email</label><input type="email" id="bug-email" placeholder="Optional — for a reply"/></div>
-      <div class="form-field">
-        <label>Type</label>
-        <select id="bug-type">
-          <option value="Bug">&#128030; Bug report</option>
-          <option value="Feature">&#9889; Feature request</option>
-          <option value="Other">&#128172; Other</option>
-        </select>
+  <div id="topbar">
+    <h1>&#11035; CV GENERATOR</h1>
+    <div class="topbar-right">
+      <div class="palette-bar">
+        <span class="palette-label">Color</span>
+        <span class="pal active" data-hex="111111" style="background:#111111" title="Midnight"></span>
+        <span class="pal" data-hex="1a3a6e" style="background:#1a3a6e" title="Navy"></span>
+        <span class="pal" data-hex="1e5e3a" style="background:#1e5e3a" title="Forest"></span>
+        <span class="pal" data-hex="8b1a1a" style="background:#8b1a1a" title="Crimson"></span>
+        <span class="pal" data-hex="5b3a8e" style="background:#5b3a8e" title="Plum"></span>
       </div>
-      <div class="form-field"><label>Description</label><textarea id="bug-desc" placeholder="Describe the issue or feature. For bugs: steps to reproduce, expected vs actual behaviour."></textarea></div>
-      <div id="bug-status"></div>
-      <p class="form-disclaimer">
-        Your email address, if provided, is used only to reply to your message and never for marketing. This form is handled by <a href="https://formspree.io" target="_blank">Formspree</a>, which stores the messages it receives.
-      </p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn primary" onclick="submitBugReport()">&#128228; Send</button>
+      <button class="btn sm" id="btn-load-demo">Load example</button>
+      <button class="btn sm" id="btn-bug">&#128030; Report</button>
+      <button id="theme-toggle" title="Toggle theme">&#9728;</button>
     </div>
   </div>
-</div>
 
-<script>
-/* ═══ PALETTE ══════════════════════════════════════════ */
-let themeHex = '111111';
+  <div id="page-body">
+    <!-- Desktop sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-title">Sections</div>
+      <div id="sidebar-list"></div>
+    </aside>
 
-document.querySelectorAll('.pal').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelectorAll('.pal').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    themeHex = el.dataset.hex;
-    document.documentElement.style.setProperty('--accent', '#' + themeHex);
-    document.documentElement.style.setProperty('--accent-fg', '#ffffff');
-  });
-});
+    <!-- Main -->
+    <main id="app">
+      <div class="personal-block">
+        <h2>Personal Info</h2>
+        <div class="field-grid" id="pi-grid"></div>
+      </div>
+      <div id="sections-list"></div>
+      <div id="add-section-bar">
+        <button class="btn" onclick="addSection('education')">+ Education</button>
+        <button class="btn" onclick="addSection('experience')">+ Experience</button>
+        <button class="btn" onclick="addSection('publication')">+ Publications</button>
+        <button class="btn" onclick="addSection('project')">+ Projects</button>
+        <button class="btn" onclick="addSection('skills')">+ Skills</button>
+        <button class="btn" onclick="addSection('achievements')">+ Achievements</button>
+        <button class="btn" onclick="addSection('languages')">+ Languages</button>
+        <button class="btn" onclick="addSection('generic')">+ Generic</button>
+        <button class="btn" onclick="addSection('pagebreak')">&#8629; Page break</button>
+      </div>
+      <div id="credits">
+        &copy; 2025 <a href="https://baptistepras.fr/" target="_blank">Baptiste PRAS</a>. LaTeX CV Generator, free to
+        use for noncommercial purposes. Hosted by <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+        (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA, +1 415 735 4488). Visits are counted
+        with <a href="https://www.goatcounter.com" target="_blank">GoatCounter</a>, without cookies. PDF compilation
+        sends your LaTeX source to latex.ytotech.com (texlive.net as a fallback). Nothing you enter is stored by this
+        site.
+      </div>
+    </main>
+  </div>
 
-/* ═══ COLOR SWATCHES ═══════════════════════════════════ */
-const SWATCHES = [
-  { hex:'#111111', label:'Black'   },
-  { hex:'#1a3a6e', label:'Navy'    },
-  { hex:'#1e5e3a', label:'Forest'  },
-  { hex:'#8b1a1a', label:'Crimson' },
-  { hex:'#5b3a8e', label:'Plum'    },
-];
-function swatchHtml() {
-  return SWATCHES.map(c =>
-    '<span class="color-swatch" style="background:' + c.hex + '" title="' + c.label + '"'
-    + ' onmousedown="event.preventDefault()" onclick="applyColor(\'' + c.hex + '\')"></span>'
-  ).join('');
-}
-function applyColor(hex) { document.execCommand('foreColor', false, hex); }
+  <!-- Mobile FAB -->
+  <button id="fab-btn" onclick="toggleMobSidebar()" title="Sections">&#8801;</button>
 
-/* ═══ THEME ════════════════════════════════════════════ */
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
-  document.getElementById('theme-toggle').innerHTML = dark ? '&#127769;' : '&#9728;';
-});
+  <!-- Mobile overlay -->
+  <div id="mob-overlay">
+    <div id="mob-backdrop" onclick="toggleMobSidebar()"></div>
+    <div id="mob-panel">
+      <div class="sidebar-title">Sections</div>
+      <div id="mob-sidebar-list"></div>
+    </div>
+  </div>
 
-/* ═══ MOBILE SIDEBAR TOGGLE ════════════════════════════ */
-function toggleMobSidebar() {
-  const ov = document.getElementById('mob-overlay');
-  ov.classList.toggle('open');
-}
+  <!-- Action bar -->
+  <div id="action-bar">
+    <button class="btn" onclick="openLatexModal()">&#128196; View LaTeX</button>
+    <button class="btn" onclick="openPdfModal()">&#128424; Compile &amp; Preview</button>
+  </div>
 
-/* ═══ STATE + SCHEMAS ══════════════════════════════════ */
-const state = { sections: [] };
-let pdfBlob = null;
+  <!-- LaTeX modal -->
+  <div class="modal-backdrop" id="latex-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>LATEX SOURCE</h3><button class="btn sm" onclick="closeModal('latex-modal')">&#10005; Close</button>
+      </div>
+      <div class="modal-body">
+        <pre id="latex-code"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="copyLatex()">&#128203; Copy</button>
+        <button class="btn" onclick="downloadLatex()">&#8595; Download .tex</button>
+      </div>
+    </div>
+  </div>
 
-const SCHEMAS = {
-  education: [
-    { key:'degree',      label:'Degree / Program',        type:'richtext'      },
-    { key:'institution', label:'Institution',             type:'richtext'      },
-    { key:'note',        label:'Note (e.g. Honors)',      type:'richtext'      },
-    { key:'dateRange',   label:'Date range',              type:'richtext'      },
-    { key:'location',    label:'Location',                type:'richtext'      },
-  ],
-  experience: [
-    { key:'role',        label:'Role / Title',            type:'richtext'      },
-    { key:'org',         label:'Organization',            type:'richtext'      },
-    { key:'dateRange',   label:'Date range',              type:'richtext'      },
-    { key:'location',    label:'Location',                type:'richtext'      },
-    { key:'description', label:'Description',             type:'richtext-long' },
-    { key:'contact',     label:'Contact (optional)',      type:'richtext'      },
-  ],
-  publication: [
-    { key:'title',       label:'Title',                   type:'richtext'      },
-    { key:'venue',       label:'Venue',                   type:'richtext'      },
-  ],
-  project: [
-    { key:'title',       label:'Title',                   type:'richtext'      },
-    { key:'url',         label:'URL',                     type:'input'         },
-    { key:'description', label:'Description',             type:'richtext-long' },
-  ],
-  skills: [
-    { key:'category',    label:'Category',                type:'richtext'      },
-    { key:'items',       label:'Items',                   type:'richtext-long' },
-  ],
-  achievements: [
-    { key:'text',        label:'Achievement',             type:'richtext'      },
-  ],
-  languages: [
-    { key:'language',    label:'Language',                type:'richtext'      },
-    { key:'level',       label:'Level',                   type:'richtext'      },
-    { key:'certs',       label:'Certifications (opt.)',   type:'richtext'      },
-  ],
-  generic: [
-    { key:'content',     label:'Content',                 type:'richtext-long' },
-  ],
-  pagebreak: [],
-};
+  <!-- PDF modal -->
+  <div class="modal-backdrop" id="pdf-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>PDF PREVIEW</h3><button class="btn sm" onclick="closeModal('pdf-modal')">&#10005; Close</button>
+      </div>
+      <div class="modal-body">
+        <div id="pdf-status"></div>
+        <iframe id="pdf-frame" style="display:none"></iframe>
+        <button id="debug-toggle" onclick="toggleDebug()">&#9658; Debug log</button>
+        <pre id="debug-log"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="openOverleaf()">&#127807; Open in Overleaf</button>
+        <button class="btn" id="btn-dl-pdf" style="display:none" onclick="downloadPdf()">&#8595; Download PDF</button>
+      </div>
+    </div>
+  </div>
 
-const TYPE_LABELS = {
-  education:'Education', experience:'Experience', publication:'Publications',
-  project:'Projects', skills:'Skills', achievements:'Achievements',
-  languages:'Languages', generic:'Generic', pagebreak:'Page Break',
-};
+  <!-- Bug / Feature modal -->
+  <div class="modal-backdrop" id="bug-modal">
+    <div class="modal" style="max-width:490px">
+      <div class="modal-header">
+        <h3>REPORT A BUG / REQUEST A FEATURE</h3><button class="btn sm" onclick="closeModal('bug-modal')">&#10005;
+          Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field"><label>Your name</label><input type="text" id="bug-name" placeholder="Optional" /></div>
+        <div class="form-field"><label>Your email</label><input type="email" id="bug-email"
+            placeholder="Optional — for a reply" /></div>
+        <div class="form-field">
+          <label>Type</label>
+          <select id="bug-type">
+            <option value="Bug">&#128030; Bug report</option>
+            <option value="Feature">&#9889; Feature request</option>
+            <option value="Other">&#128172; Other</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Description</label><textarea id="bug-desc"
+            placeholder="Describe the issue or feature. For bugs: steps to reproduce, expected vs actual behaviour."></textarea>
+        </div>
+        <div id="bug-status"></div>
+        <p class="form-disclaimer">
+          Your email address, if provided, is used only to reply to your message and never for marketing. This form is
+          handled by <a href="https://formspree.io" target="_blank">Formspree</a>, which stores the messages it
+          receives.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn primary" onclick="submitBugReport()">&#128228; Send</button>
+      </div>
+    </div>
+  </div>
 
-let _id = 0;
-const uid = () => `id${++_id}`;
+  <script>
+    /* ═══ PALETTE ══════════════════════════════════════════ */
+    let themeHex = '111111';
 
-/* ═══ UTILS ════════════════════════════════════════════ */
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function le(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/\\/g,'\\textbackslash{}').replace(/&/g,'\\&').replace(/%/g,'\\%')
-    .replace(/\$/g,'\\$').replace(/#/g,'\\#').replace(/_/g,'\\_')
-    .replace(/\{/g,'\\{').replace(/\}/g,'\\}')
-    .replace(/~/g,'\\textasciitilde{}').replace(/\^/g,'\\textasciicircum{}');
-}
-function rgbToHex(rgb) {
-  const m = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-  return m ? [m[1],m[2],m[3]].map(n => (+n).toString(16).padStart(2,'0')).join('').toUpperCase() : null;
-}
+    document.querySelectorAll('.pal').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.pal').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        themeHex = el.dataset.hex;
+        document.documentElement.style.setProperty('--accent', '#' + themeHex);
+        document.documentElement.style.setProperty('--accent-fg', '#ffffff');
+      });
+    });
 
-/* ═══ HTML → LATEX ═════════════════════════════════════ */
-function walkNode(n) {
-  if (n.nodeType === 3) return le(n.textContent);
-  if (n.nodeType !== 1) return '';
-  const tag  = n.tagName;
-  const kids = () => Array.from(n.childNodes).map(walkNode).join('');
-  switch (tag) {
-    case 'B': case 'STRONG': return '\\textbf{' + kids() + '}';
-    case 'I': case 'EM':     return '\\textit{' + kids() + '}';
-    case 'U':                return '\\underline{' + kids() + '}';
-    case 'FONT': {
-      const col = n.getAttribute('color');
-      return col ? '\\textcolor[HTML]{' + col.replace('#','').toUpperCase() + '}{' + kids() + '}' : kids();
+    /* ═══ COLOR SWATCHES ═══════════════════════════════════ */
+    const SWATCHES = [
+      { hex: '#111111', label: 'Black' },
+      { hex: '#1a3a6e', label: 'Navy' },
+      { hex: '#1e5e3a', label: 'Forest' },
+      { hex: '#8b1a1a', label: 'Crimson' },
+      { hex: '#5b3a8e', label: 'Plum' },
+    ];
+    function swatchHtml() {
+      return SWATCHES.map(c =>
+        '<span class="color-swatch" style="background:' + c.hex + '" title="' + c.label + '"'
+        + ' onmousedown="event.preventDefault()" onclick="applyColor(\'' + c.hex + '\')"></span>'
+      ).join('');
     }
-    case 'SPAN': {
-      const c = n.style && n.style.color;
-      if (c) {
-        const hex = c.startsWith('#') ? c.slice(1).toUpperCase() : (c.startsWith('rgb') ? rgbToHex(c) : null);
-        if (hex) return '\\textcolor[HTML]{' + hex + '}{' + kids() + '}';
-      }
-      return kids();
+    function applyColor(hex) { document.execCommand('foreColor', false, hex); }
+
+    /* ═══ THEME ════════════════════════════════════════════ */
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+      document.getElementById('theme-toggle').innerHTML = dark ? '&#127769;' : '&#9728;';
+    });
+
+    /* ═══ MOBILE SIDEBAR TOGGLE ════════════════════════════ */
+    function toggleMobSidebar() {
+      const ov = document.getElementById('mob-overlay');
+      ov.classList.toggle('open');
     }
-    case 'UL': return '\n\\begin{itemize}[leftmargin=1.1em,topsep=2pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n' + kids() + '\\end{itemize}\n';
-    case 'OL': return '\n\\begin{enumerate}[leftmargin=1.1em,topsep=2pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n' + kids() + '\\end{enumerate}\n';
-    case 'LI': return '    \\item ' + kids().trim() + '\n';
-    case 'BR': return n.nextSibling ? ' ' : '';
-    case 'DIV': case 'P': { const c = kids(); return c.trim() ? c + ' ' : ''; }
-    default: return kids();
-  }
-}
-function htmlToLatex(html) {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return walkNode(tmp).replace(/[ \t]{2,}/g,' ').trim();
-}
 
-/* ═══ PERSONAL INFO FIELDS ═════════════════════════════ */
-const PI_FIELDS = [
-  { id:'name',     label:'Full name',     ph:'Jean Dupont',              },
-  { id:'title',    label:'Title',         ph:"Master's student in AI",   },
-  { id:'email',    label:'Email',         ph:'you@example.com',          },
-  { id:'website',  label:'Website',       ph:'yoursite.com',             },
-  { id:'github',   label:'GitHub URL',    ph:'https://github.com/you',   },
-  { id:'linkedin', label:'LinkedIn URL',  ph:'https://linkedin.com/in/you' },
-];
+    /* ═══ STATE + SCHEMAS ══════════════════════════════════ */
+    const state = { sections: [] };
+    let pdfBlob = null;
 
-function piToolbar() {
-  return '<div class="rich-toolbar">'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'bold\')"><b>B</b></button>'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'italic\')"><i>I</i></button>'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'underline\')"><u>U</u></button>'
-    + '<span class="toolbar-sep"></span>'
-    + swatchHtml()
-    + '</div>';
-}
+    const SCHEMAS = {
+      education: [
+        { key: 'degree', label: 'Degree / Program', type: 'richtext' },
+        { key: 'institution', label: 'Institution', type: 'richtext' },
+        { key: 'note', label: 'Note (e.g. Honors)', type: 'richtext' },
+        { key: 'dateRange', label: 'Date range', type: 'richtext' },
+        { key: 'location', label: 'Location', type: 'richtext' },
+      ],
+      experience: [
+        { key: 'role', label: 'Role / Title', type: 'richtext' },
+        { key: 'org', label: 'Organization', type: 'richtext' },
+        { key: 'dateRange', label: 'Date range', type: 'richtext' },
+        { key: 'location', label: 'Location', type: 'richtext' },
+        { key: 'description', label: 'Description', type: 'richtext-long' },
+        { key: 'contact', label: 'Contact (optional)', type: 'richtext' },
+      ],
+      publication: [
+        { key: 'title', label: 'Title', type: 'richtext' },
+        { key: 'venue', label: 'Venue', type: 'richtext' },
+      ],
+      project: [
+        { key: 'title', label: 'Title', type: 'richtext' },
+        { key: 'url', label: 'URL', type: 'input' },
+        { key: 'description', label: 'Description', type: 'richtext-long' },
+      ],
+      skills: [
+        { key: 'category', label: 'Category', type: 'richtext' },
+        { key: 'items', label: 'Items', type: 'richtext-long' },
+      ],
+      achievements: [
+        { key: 'text', label: 'Achievement', type: 'richtext' },
+      ],
+      languages: [
+        { key: 'language', label: 'Language', type: 'richtext' },
+        { key: 'level', label: 'Level', type: 'richtext' },
+        { key: 'certs', label: 'Certifications (opt.)', type: 'richtext' },
+      ],
+      generic: [
+        { key: 'content', label: 'Content', type: 'richtext-long' },
+      ],
+      pagebreak: [],
+    };
 
-function renderPersonalInfo() {
-  const grid = document.getElementById('pi-grid');
-  grid.innerHTML = '';
-  PI_FIELDS.forEach(f => {
-    const wrap = document.createElement('div');
-    wrap.className = 'field-group';
-    wrap.innerHTML =
-      '<label>' + esc(f.label) + '</label>'
-      + piToolbar()
-      + '<div class="rich-editor short" id="pi-' + f.id + '" contenteditable="true"'
-      + ' onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>';
-    grid.appendChild(wrap);
-  });
-}
-function piText(id)  { const el = document.getElementById('pi-' + id); return el ? el.innerText.trim() : ''; }
-function piLatex(id) { const el = document.getElementById('pi-' + id); return el ? htmlToLatex(el.innerHTML) : ''; }
-function setPiValue(id, val) {
-  const el = document.getElementById('pi-' + id);
-  if (el) el.innerText = val;
-}
+    const TYPE_LABELS = {
+      education: 'Education', experience: 'Experience', publication: 'Publications',
+      project: 'Projects', skills: 'Skills', achievements: 'Achievements',
+      languages: 'Languages', generic: 'Generic', pagebreak: 'Page Break',
+    };
 
-/* ═══ FIELD HTML BUILDER ═══════════════════════════════ */
-function fieldHtml(secId, entryId, f) {
-  if (f.type === 'input') {
-    return '<div class="entry-field"><label>' + esc(f.label) + '</label>'
-         + '<input type="text" id="fi-' + entryId + '-' + f.key + '"'
-         + ' onchange="updateInputField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\',this.value)"/>'
-         + '</div>';
-  }
-  const isLong = f.type === 'richtext-long';
-  const rid    = 'ri-' + entryId + '-' + f.key;
-  const listBtn = isLong
-    ? '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'insertUnorderedList\')">&#8226;</button>'
-    : '';
-  const toolbar =
-    '<div class="rich-toolbar">'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'bold\')"><b>B</b></button>'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'italic\')"><i>I</i></button>'
-    + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'underline\')"><u>U</u></button>'
-    + listBtn
-    + '<span class="toolbar-sep"></span>'
-    + swatchHtml()
-    + '</div>';
-  const noEnter = isLong ? '' : ' onkeydown="if(event.key===\'Enter\')event.preventDefault()"';
-  return '<div class="entry-field"><label>' + esc(f.label) + '</label>'
-    + toolbar
-    + '<div class="rich-editor ' + (isLong ? 'long' : 'short') + '" id="' + rid + '" contenteditable="true"' + noEnter
-    +   ' oninput="updateRichField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\')"></div>'
-    + '</div>';
-}
+    let _id = 0;
+    const uid = () => `id${++_id}`;
 
-/* ═══ FIELD UPDATES ════════════════════════════════════ */
-function updateInputField(secId, entryId, key, value) {
-  const sec   = state.sections.find(s => s.id === secId);
-  const entry = sec?.entries.find(e => e.id === entryId);
-  if (entry) entry.fields[key] = value;
-}
-function updateRichField(secId, entryId, key) {
-  const el    = document.getElementById('ri-' + entryId + '-' + key);
-  if (!el) return;
-  const sec   = state.sections.find(s => s.id === secId);
-  const entry = sec?.entries.find(e => e.id === entryId);
-  if (!entry) return;
-  entry.fields[key] = el.innerHTML;
-  const schema = SCHEMAS[sec.type] || [];
-  if (schema[0]?.key === key) {
-    const prev = document.getElementById('epreview-' + entryId);
-    if (prev) prev.textContent = el.innerText.trim() || '(empty)';
-  }
-}
-function setEntryValues(entry, sec) {
-  const schema = SCHEMAS[sec.type] || [];
-  schema.forEach(f => {
-    const val = entry.fields[f.key];
-    if (val === undefined || val === null) return;
-    if (f.type === 'input') {
-      const el = document.getElementById('fi-' + entry.id + '-' + f.key);
-      if (el) el.value = val;
-    } else {
-      const el = document.getElementById('ri-' + entry.id + '-' + f.key);
-      if (el) el.innerHTML = val;
+    /* ═══ UTILS ════════════════════════════════════════════ */
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-  });
-  const firstF = schema[0];
-  if (firstF) {
-    const prev = document.getElementById('epreview-' + entry.id);
-    if (prev) {
-      const el = firstF.type === 'input'
-        ? null
-        : document.getElementById('ri-' + entry.id + '-' + firstF.key);
-      prev.textContent = el
-        ? (el.innerText.trim() || '(empty)')
-        : (entry.fields[firstF.key] || '(empty)');
+    function le(s) {
+      if (!s) return '';
+      return String(s)
+        .replace(/\\/g, '\\textbackslash{}').replace(/&/g, '\\&').replace(/%/g, '\\%')
+        .replace(/\$/g, '\\$').replace(/#/g, '\\#').replace(/_/g, '\\_')
+        .replace(/\{/g, '\\{').replace(/\}/g, '\\}')
+        .replace(/~/g, '\\textasciitilde{}').replace(/\^/g, '\\textasciicircum{}');
     }
-  }
-}
+    function rgbToHex(rgb) {
+      const m = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      return m ? [m[1], m[2], m[3]].map(n => (+n).toString(16).padStart(2, '0')).join('').toUpperCase() : null;
+    }
 
-/* ═══ SECTION / ENTRY MANAGEMENT ═══════════════════════ */
-function addSection(type) {
-  const sec = { id: uid(), type, name: TYPE_LABELS[type] || 'Section', entries: [] };
-  state.sections.push(sec);
-  if (type === 'pagebreak') renderPagebreak(sec);
-  else { renderSection(sec); if (SCHEMAS[type]?.length) addEntry(sec.id); }
-  renderSidebars();
-}
-function removeSection(secId) {
-  state.sections = state.sections.filter(s => s.id !== secId);
-  document.getElementById('sec-' + secId)?.remove();
-  renderSidebars();
-}
-function updateSectionName(secId, val) {
-  const sec = state.sections.find(s => s.id === secId);
-  if (sec) sec.name = val;
-  renderSidebars();
-}
-function addEntry(secId) {
-  const sec = state.sections.find(s => s.id === secId);
-  if (!sec) return;
-  const schema = SCHEMAS[sec.type] || [];
-  const entry  = { id: uid(), fields: Object.fromEntries(schema.map(f => [f.key, ''])) };
-  sec.entries.push(entry);
-  renderEntry(secId, entry);
-}
-function removeEntry(secId, entryId) {
-  const sec = state.sections.find(s => s.id === secId);
-  if (sec) sec.entries = sec.entries.filter(e => e.id !== entryId);
-  document.getElementById('entry-' + entryId)?.remove();
-}
-function toggleEntry(entryId) {
-  document.getElementById('ebody-' + entryId)?.classList.toggle('open');
-  document.getElementById('etog-'  + entryId)?.classList.toggle('open');
-}
-
-/* ═══ SIDEBARS (desktop + mobile) ══════════════════════ */
-function renderSidebars() {
-  renderSidebarInto('sidebar-list');
-  renderSidebarInto('mob-sidebar-list');
-}
-
-function renderSidebarInto(containerId) {
-  const list = document.getElementById(containerId);
-  if (!list) return;
-  list.innerHTML = '';
-  state.sections.forEach((sec, i) => {
-    const item = document.createElement('div');
-    item.className = 'sidebar-item' + (sec.type === 'pagebreak' ? ' is-pagebreak' : '');
-    const label = sec.type === 'pagebreak' ? '↵ Page break' : (sec.name || sec.type);
-    item.innerHTML =
-      '<span class="sidebar-name" onclick="scrollToSection(\'' + sec.id + '\')" title="' + esc(label) + '">'
-      + esc(label) + '</span>'
-      + '<div class="sidebar-btns">'
-      + '<button class="sidebar-btn" onclick="moveSec(\'' + sec.id + '\',-1)" '
-      +   (i === 0 ? 'disabled' : '') + ' title="Up">&#8593;</button>'
-      + '<button class="sidebar-btn" onclick="moveSec(\'' + sec.id + '\',1)" '
-      +   (i === state.sections.length - 1 ? 'disabled' : '') + ' title="Down">&#8595;</button>'
-      + '</div>';
-    list.appendChild(item);
-  });
-}
-
-function scrollToSection(secId) {
-  document.getElementById('sec-' + secId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // close mobile overlay if open
-  document.getElementById('mob-overlay').classList.remove('open');
-}
-
-function moveSec(secId, dir) {
-  const idx = state.sections.findIndex(s => s.id === secId);
-  const t   = idx + dir;
-  if (t < 0 || t >= state.sections.length) return;
-  [state.sections[idx], state.sections[t]] = [state.sections[t], state.sections[idx]];
-  const domList = document.getElementById('sections-list');
-  state.sections.forEach(sec => {
-    const card = document.getElementById('sec-' + sec.id);
-    if (card) domList.appendChild(card);
-  });
-  renderSidebars();
-}
-
-/* ═══ RENDER ════════════════════════════════════════════ */
-function renderPagebreak(sec) {
-  const list = document.getElementById('sections-list');
-  const card = document.createElement('div');
-  card.className = 'pagebreak-card'; card.id = 'sec-' + sec.id;
-  card.draggable = true; card.dataset.secId = sec.id;
-  card.innerHTML =
-    '<div class="pagebreak-header"><span class="section-drag-handle">&#10783;</span>'
-    + '<span class="pagebreak-label">&#8629; PAGE BREAK</span>'
-    + '<div class="section-actions"><button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button></div>'
-    + '</div>';
-  list.appendChild(card); setupSectionDrag(card);
-}
-
-function renderSection(sec) {
-  const list = document.getElementById('sections-list');
-  const card = document.createElement('div');
-  card.className = 'section-card'; card.id = 'sec-' + sec.id;
-  card.draggable = true; card.dataset.secId = sec.id;
-  card.innerHTML =
-    '<div class="section-header"><span class="section-drag-handle">&#10783;</span>'
-    + '<input class="section-name" type="text" value="' + esc(sec.name) + '"'
-    +   ' onchange="updateSectionName(\'' + sec.id + '\',this.value)" title="Rename"/>'
-    + '<span class="section-type-label">[' + sec.type + ']</span>'
-    + '<div class="section-actions">'
-    +   '<button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Entry</button>'
-    +   '<button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button>'
-    + '</div></div>'
-    + '<div class="section-body"><div class="entries-list" id="entries-' + sec.id + '"></div>'
-    + '<div class="add-entry-row"><button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Add entry</button></div></div>';
-  list.appendChild(card); setupSectionDrag(card);
-}
-
-function renderEntry(secId, entry) {
-  const sec    = state.sections.find(s => s.id === secId);
-  const schema = SCHEMAS[sec.type] || [];
-  const list   = document.getElementById('entries-' + secId);
-  const card   = document.createElement('div');
-  card.className = 'entry-card'; card.id = 'entry-' + entry.id;
-  card.draggable = true; card.dataset.entryId = entry.id; card.dataset.secId = secId;
-  const fHtml   = schema.map(f => fieldHtml(secId, entry.id, f)).join('');
-  const preview = (schema[0]?.key && entry.fields[schema[0].key]) || '(empty)';
-  card.innerHTML =
-    '<div class="entry-header" onclick="toggleEntry(\'' + entry.id + '\')">'
-    + '<span class="entry-drag-handle" onclick="event.stopPropagation()">&#10783;</span>'
-    + '<span class="entry-title-preview" id="epreview-' + entry.id + '">' + esc(preview) + '</span>'
-    + '<span class="entry-toggle open" id="etog-' + entry.id + '">&#9662;</span></div>'
-    + '<div class="entry-body open" id="ebody-' + entry.id + '"><div class="entry-fields">' + fHtml + '</div></div>'
-    + '<div class="entry-footer"><button class="btn sm danger" onclick="removeEntry(\'' + secId + '\',\'' + entry.id + '\')">&#10005; Remove</button></div>';
-  list.appendChild(card); setupEntryDrag(card);
-}
-
-/* ═══ DRAG & DROP — AUTO SCROLL ════════════════════════ */
-let autoScrollId = null;
-document.addEventListener('dragover', e => {
-  const ZONE = 90, SPEED = 15;
-  clearInterval(autoScrollId);
-  if      (e.clientY < ZONE)                           autoScrollId = setInterval(() => window.scrollBy(0, -SPEED), 16);
-  else if (e.clientY > window.innerHeight - ZONE)      autoScrollId = setInterval(() => window.scrollBy(0,  SPEED), 16);
-});
-document.addEventListener('dragend', () => { clearInterval(autoScrollId); autoScrollId = null; });
-
-/* ═══ DRAG & DROP — SECTIONS ════════════════════════════ */
-let dragSec = null;
-function setupSectionDrag(card) {
-  card.addEventListener('dragstart', e => { dragSec = card; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); setTimeout(() => card.classList.add('dragging'), 0); });
-  card.addEventListener('dragend',   () => { card.classList.remove('dragging'); document.querySelectorAll('.section-card,.pagebreak-card').forEach(c => c.classList.remove('drag-over')); dragSec = null; syncSectionOrder(); renderSidebars(); });
-  card.addEventListener('dragover',  e => { if (!dragSec || dragSec === card) return; e.preventDefault(); card.classList.add('drag-over'); });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-  card.addEventListener('drop', e => {
-    e.preventDefault(); card.classList.remove('drag-over');
-    if (!dragSec || dragSec === card) return;
-    const rect = card.getBoundingClientRect();
-    const list = document.getElementById('sections-list');
-    if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragSec, card);
-    else list.insertBefore(dragSec, card.nextSibling);
-  });
-}
-function syncSectionOrder() {
-  const cards = [...document.getElementById('sections-list').children];
-  const byId  = Object.fromEntries(state.sections.map(s => [s.id, s]));
-  state.sections = cards.map(c => byId[c.dataset.secId]).filter(Boolean);
-}
-
-/* ═══ DRAG & DROP — ENTRIES ════════════════════════════ */
-let dragEntry = null;
-function setupEntryDrag(card) {
-  card.addEventListener('dragstart', e => { dragEntry = card; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); setTimeout(() => card.classList.add('dragging'), 0); });
-  card.addEventListener('dragend',   () => { card.classList.remove('dragging'); document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over')); dragEntry = null; syncEntryOrders(); });
-  card.addEventListener('dragover',  e => { if (!dragEntry || dragEntry === card || dragEntry.dataset.secId !== card.dataset.secId) return; e.preventDefault(); e.stopPropagation(); card.classList.add('drag-over'); });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-  card.addEventListener('drop', e => {
-    e.preventDefault(); e.stopPropagation(); card.classList.remove('drag-over');
-    if (!dragEntry || dragEntry === card || dragEntry.dataset.secId !== card.dataset.secId) return;
-    const list = document.getElementById('entries-' + card.dataset.secId);
-    const rect = card.getBoundingClientRect();
-    if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragEntry, card);
-    else list.insertBefore(dragEntry, card.nextSibling);
-  });
-}
-function syncEntryOrders() {
-  state.sections.forEach(sec => {
-    const list = document.getElementById('entries-' + sec.id);
-    if (!list) return;
-    const byId = Object.fromEntries(sec.entries.map(e => [e.id, e]));
-    sec.entries = [...list.querySelectorAll('.entry-card')].map(c => byId[c.dataset.entryId]).filter(Boolean);
-  });
-}
-function syncAll() { syncEntryOrders(); syncSectionOrder(); }
-
-/* ═══ LATEX GENERATION ═════════════════════════════════ */
-function buildLatex() {
-  const hex     = themeHex;
-  const colored = hex !== '111111';
-  const RL      = '\\RaggedLeft\\arraybackslash';
-  const colSpec  = '>{' + RL + '}';
-  const tabCols  = '@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}' + colSpec + 'p{0.28\\textwidth}@{}';
-
-  let tex = '';
-  tex += '\\documentclass[10.4pt,a4paper]{article}\n';
-  tex += '\\usepackage[a4paper,margin=1.4cm]{geometry}\n';
-  tex += '\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n';
-  tex += '\\usepackage{newtxtext,newtxmath}\n\\usepackage{fontawesome5}\n';
-  tex += '\\usepackage[hidelinks]{hyperref}\n\\usepackage{xcolor}\n';
-  tex += '\\usepackage{enumitem}\n\\usepackage{tabularx}\n\\usepackage{array}\n';
-  tex += '\\usepackage{ragged2e}\n\\usepackage{titlesec}\n\\usepackage{setspace}\n';
-  tex += '\\usepackage{parskip}\n\\usepackage{multicol}\n\\usepackage{needspace}\n';
-  if (colored) tex += '\\definecolor{themecolor}{HTML}{' + hex.toUpperCase() + '}\n';
-  tex += '\\setlength{\\parindent}{0pt}\n\\setlength{\\parskip}{0pt}\n\\setlength{\\tabcolsep}{0pt}\n';
-  tex += '\\linespread{1.02}\n\\pagestyle{empty}\n\\urlstyle{same}\n';
-  tex += '\\setlist[itemize]{\n    leftmargin=1.1em,\n    itemsep=0.05em,\n    topsep=0.05em,\n    parsep=0em,\n    partopsep=0em\n}\n';
-  tex += '\\titleformat{\\section}\n  {\\Large\\bfseries' + (colored ? '\\color{themecolor}' : '') + '}\n  {}{0pt}{\\MakeUppercase}[\\vspace{0.15em}\\titlerule]\n';
-  tex += '\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}\n';
-  tex += '\\newcommand{\\cvheadername}[1]{{\\fontsize{25}{28}\\selectfont\\bfseries' + (colored ? '\\color{themecolor}' : '') + ' #1\\par}}\n';
-  tex += '\\newcommand{\\cvheadersubtitle}[1]{\\vspace{0.35em}{\\fontsize{15}{18}\\selectfont\\itshape #1\\par}}\n';
-  tex += '\\newcommand{\\contactline}[1]{\\vspace{0.8em}{\\normalsize #1\\par}}\n';
-  tex += '\\newcommand{\\eduentry}[5]{%\n';
-  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
-  tex += '        {\\large\\bfseries #1} & {\\large #4} \\\\\n';
-  tex += '        {\\large\\itshape #2} & {\\large #5} \\\\\n';
-  tex += '        \\if\\relax\\detokenize{#3}\\relax\n        \\else\n        {\\large #3} & \\\\\n        \\fi\n';
-  tex += '    \\end{tabular*}\\vspace{0.15em}\n}\n';
-  tex += '\\newcommand{\\pubentry}[2]{{\\large\\bfseries #1\\par}{\\large\\itshape #2\\par}\\vspace{0.45em}}\n';
-  tex += '\\newcommand{\\experienceentry}[6]{%\n    \\Needspace{10\\baselineskip}\n';
-  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
-  tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n        {\\large\\itshape #2} & {\\large #4} \\\\\n    \\end{tabular*}\n';
-  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #5}\n    \\end{itemize}\n';
-  tex += '    {\\large\\itshape #6\\par}\\vspace{0.2em}\n}\n';
-  tex += '\\newcommand{\\experienceentrynocon}[5]{%\n    \\Needspace{9\\baselineskip}\n';
-  tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
-  tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n        {\\large\\itshape #2} & {\\large #4} \\\\\n    \\end{tabular*}\n';
-  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #5}\n    \\end{itemize}\\vspace{0.2em}\n}\n';
-  tex += '\\newcommand{\\projectentry}[3]{{\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}\n';
-  tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #2}\n    \\end{itemize}\\vspace{0.1em}\n}\n';
-  tex += '\\newcommand{\\skillblock}[2]{{\\large\\bfseries #1\\par}\n    \\begin{itemize}\\item {\\large #2}\\end{itemize}\\vspace{0.35em}\n}\n';
-  tex += '\\begin{document}\n';
-
-  const email    = piText('email'),    emailD   = piLatex('email');
-  const website  = piText('website'),  websiteD = piLatex('website');
-  const github   = piText('github'),   githubD  = piLatex('github');
-  const linkedin = piText('linkedin'), linkedinD= piLatex('linkedin');
-
-  tex += '\\begin{center}\n';
-  tex += '    \\cvheadername{' + piLatex('name') + '}\n';
-  tex += '    \\cvheadersubtitle{' + piLatex('title') + '}\n\n';
-  tex += '    \\contactline{\n        \\faEnvelope\\ \\href{mailto:' + email + '}{' + emailD + '}';
-  if (website) tex += '\n        \\hspace{1.2em}\n        \\faLink\\ \\href{https://' + website + '}{' + websiteD + '}';
-  if (github)  tex += '\n        \\hspace{1.2em}\n        \\faGithub\\ \\href{' + github + '}{' + githubD + '}';
-  tex += '\n    }\n\n';
-  if (linkedin) tex += '    \\contactline{\n        \\faLinkedin\\ \\href{' + linkedin + '}{' + linkedinD + '}\n    }\n';
-  tex += '\\end{center}\n';
-
-  const rt = v => htmlToLatex(v || '');
-  const lp = v => le(v || '');
-
-  state.sections.forEach(sec => {
-    if (sec.type === 'pagebreak') { tex += '\n\\newpage\n'; return; }
-    tex += '\n';
-    if (sec.name.trim()) tex += '\\section{' + le(sec.name) + '}\n\n';
-
-    if (sec.type === 'languages' && sec.entries.length) {
-      tex += '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n';
-      for (let i = 0; i < sec.entries.length; i += 2) {
-        const L = sec.entries[i], R = sec.entries[i+1];
-        const getCerts = e => {
-          if (!e?.fields.certs) return [];
-          const el  = document.getElementById('ri-' + e.id + '-certs');
-          const raw = el ? el.innerText.trim() : '';
-          return raw.split(/\s*[—–\-]\s*|\n/).map(s => le(s.trim())).filter(Boolean);
-        };
-        const Ln=rt(L.fields.language), Ll=rt(L.fields.level), Lc=getCerts(L);
-        const Rn=R?rt(R.fields.language):'', Rl=R?rt(R.fields.level):'', Rc=R?getCerts(R):[];
-        tex += '    {\\large\\bfseries ' + Ln + '} & ' + (Rn ? '{\\large\\bfseries ' + Rn + '}' : '') + ' \\\\\n';
-        tex += '    {\\large ' + Ll + '} & ' + (Rl ? '{\\large ' + Rl + '}' : '') + ' \\\\\n';
-        const maxC = Math.max(Lc.length, Rc.length);
-        for (let j = 0; j < maxC; j++) {
-          tex += '    ' + (Lc[j]?'{\\large '+Lc[j]+'}':'') + ' & ' + (Rc[j]?'{\\large '+Rc[j]+'}':'') + ' \\\\\n';
+    /* ═══ HTML → LATEX ═════════════════════════════════════ */
+    function walkNode(n) {
+      if (n.nodeType === 3) return le(n.textContent);
+      if (n.nodeType !== 1) return '';
+      const tag = n.tagName;
+      const kids = () => Array.from(n.childNodes).map(walkNode).join('');
+      switch (tag) {
+        case 'B': case 'STRONG': return '\\textbf{' + kids() + '}';
+        case 'I': case 'EM': return '\\textit{' + kids() + '}';
+        case 'U': return '\\underline{' + kids() + '}';
+        case 'FONT': {
+          const col = n.getAttribute('color');
+          return col ? '\\textcolor[HTML]{' + col.replace('#', '').toUpperCase() + '}{' + kids() + '}' : kids();
         }
-        if (i + 2 < sec.entries.length) tex += '    [0.9em]\n';
-      }
-      tex += '\\end{tabular*}\n\n';
-      return;
-    }
-
-    sec.entries.forEach(entry => {
-      const f = entry.fields;
-      switch (sec.type) {
-        case 'education':
-          tex += '\\eduentry\n{' + rt(f.degree) + '}\n{' + rt(f.institution) + '}\n{' + rt(f.note) + '}\n'
-               + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n\n';
-          break;
-        case 'publication':
-          tex += '\\pubentry\n{' + rt(f.title) + '}\n{' + rt(f.venue) + '}\n\n';
-          break;
-        case 'experience':
-          if (f.contact && f.contact.trim()) {
-            tex += '\\experienceentry\n{' + rt(f.role) + '}\n{' + rt(f.org) + '}\n'
-                 + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n'
-                 + '{' + rt(f.description) + '}\n{Contact: ' + lp(f.contact) + '}\n\n';
-          } else {
-            tex += '\\experienceentrynocon\n{' + rt(f.role) + '}\n{' + rt(f.org) + '}\n'
-                 + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n'
-                 + '{' + rt(f.description) + '}\n\n';
+        case 'SPAN': {
+          const c = n.style && n.style.color;
+          if (c) {
+            const hex = c.startsWith('#') ? c.slice(1).toUpperCase() : (c.startsWith('rgb') ? rgbToHex(c) : null);
+            if (hex) return '\\textcolor[HTML]{' + hex + '}{' + kids() + '}';
           }
-          break;
-        case 'project':
-          tex += '\\projectentry\n{' + rt(f.title) + '}\n{' + rt(f.description) + '}\n{' + lp(f.url) + '}\n\n';
-          break;
-        case 'skills':
-          tex += '\\skillblock\n{' + rt(f.category) + '}\n{' + rt(f.items) + '}\n\n';
-          break;
-        case 'achievements':
-          tex += '{\\large\\bfseries ' + rt(f.text) + '\\par}\n\\vspace{0.5em}\n\n';
-          break;
-        case 'generic':
-        default: {
-          const c = rt(f.content);
-          if (c.trim()) tex += '{\\large ' + c + '\\par}\n\n';
-          break;
+          return kids();
+        }
+        case 'UL': return '\n\\begin{itemize}[leftmargin=1.1em,topsep=2pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n' + kids() + '\\end{itemize}\n';
+        case 'OL': return '\n\\begin{enumerate}[leftmargin=1.1em,topsep=2pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n' + kids() + '\\end{enumerate}\n';
+        case 'LI': return '    \\item ' + kids().trim() + '\n';
+        case 'BR': return n.nextSibling ? ' ' : '';
+        case 'DIV': case 'P': { const c = kids(); return c.trim() ? c + ' ' : ''; }
+        default: return kids();
+      }
+    }
+    function htmlToLatex(html) {
+      if (!html) return '';
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return walkNode(tmp).replace(/[ \t]{2,}/g, ' ').trim();
+    }
+
+    /* ═══ PERSONAL INFO FIELDS ═════════════════════════════ */
+    const PI_FIELDS = [
+      { id: 'name', label: 'Full name', ph: 'Jean Dupont', },
+      { id: 'title', label: 'Title', ph: "Master's student in AI", },
+      { id: 'email', label: 'Email', ph: 'you@example.com', },
+      { id: 'website', label: 'Website', ph: 'yoursite.com', },
+      { id: 'github', label: 'GitHub URL', ph: 'https://github.com/you', },
+      { id: 'linkedin', label: 'LinkedIn URL', ph: 'https://linkedin.com/in/you' },
+    ];
+
+    function piToolbar() {
+      return '<div class="rich-toolbar">'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'bold\')"><b>B</b></button>'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'italic\')"><i>I</i></button>'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'underline\')"><u>U</u></button>'
+        + '<span class="toolbar-sep"></span>'
+        + swatchHtml()
+        + '</div>';
+    }
+
+    function renderPersonalInfo() {
+      const grid = document.getElementById('pi-grid');
+      grid.innerHTML = '';
+      PI_FIELDS.forEach(f => {
+        const wrap = document.createElement('div');
+        wrap.className = 'field-group';
+        wrap.innerHTML =
+          '<label>' + esc(f.label) + '</label>'
+          + piToolbar()
+          + '<div class="rich-editor short" id="pi-' + f.id + '" contenteditable="true"'
+          + ' onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>';
+        grid.appendChild(wrap);
+      });
+    }
+    function piText(id) { const el = document.getElementById('pi-' + id); return el ? el.innerText.trim() : ''; }
+    function piLatex(id) { const el = document.getElementById('pi-' + id); return el ? htmlToLatex(el.innerHTML) : ''; }
+    function setPiValue(id, val) {
+      const el = document.getElementById('pi-' + id);
+      if (el) el.innerText = val;
+    }
+
+    /* ═══ FIELD HTML BUILDER ═══════════════════════════════ */
+    function fieldHtml(secId, entryId, f) {
+      if (f.type === 'input') {
+        return '<div class="entry-field"><label>' + esc(f.label) + '</label>'
+          + '<input type="text" id="fi-' + entryId + '-' + f.key + '"'
+          + ' onchange="updateInputField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\',this.value)"/>'
+          + '</div>';
+      }
+      const isLong = f.type === 'richtext-long';
+      const rid = 'ri-' + entryId + '-' + f.key;
+      const listBtn = isLong
+        ? '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'insertUnorderedList\')">&#8226;</button>'
+        : '';
+      const toolbar =
+        '<div class="rich-toolbar">'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'bold\')"><b>B</b></button>'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'italic\')"><i>I</i></button>'
+        + '<button type="button" class="rtb" onmousedown="event.preventDefault()" onclick="document.execCommand(\'underline\')"><u>U</u></button>'
+        + listBtn
+        + '<span class="toolbar-sep"></span>'
+        + swatchHtml()
+        + '</div>';
+      const noEnter = isLong ? '' : ' onkeydown="if(event.key===\'Enter\')event.preventDefault()"';
+      return '<div class="entry-field"><label>' + esc(f.label) + '</label>'
+        + toolbar
+        + '<div class="rich-editor ' + (isLong ? 'long' : 'short') + '" id="' + rid + '" contenteditable="true"' + noEnter
+        + ' oninput="updateRichField(\'' + secId + '\',\'' + entryId + '\',\'' + f.key + '\')"></div>'
+        + '</div>';
+    }
+
+    /* ═══ FIELD UPDATES ════════════════════════════════════ */
+    function updateInputField(secId, entryId, key, value) {
+      const sec = state.sections.find(s => s.id === secId);
+      const entry = sec?.entries.find(e => e.id === entryId);
+      if (entry) entry.fields[key] = value;
+    }
+    function updateRichField(secId, entryId, key) {
+      const el = document.getElementById('ri-' + entryId + '-' + key);
+      if (!el) return;
+      const sec = state.sections.find(s => s.id === secId);
+      const entry = sec?.entries.find(e => e.id === entryId);
+      if (!entry) return;
+      entry.fields[key] = el.innerHTML;
+      const schema = SCHEMAS[sec.type] || [];
+      if (schema[0]?.key === key) {
+        const prev = document.getElementById('epreview-' + entryId);
+        if (prev) prev.textContent = el.innerText.trim() || '(empty)';
+      }
+    }
+    function setEntryValues(entry, sec) {
+      const schema = SCHEMAS[sec.type] || [];
+      schema.forEach(f => {
+        const val = entry.fields[f.key];
+        if (val === undefined || val === null) return;
+        if (f.type === 'input') {
+          const el = document.getElementById('fi-' + entry.id + '-' + f.key);
+          if (el) el.value = val;
+        } else {
+          const el = document.getElementById('ri-' + entry.id + '-' + f.key);
+          if (el) el.innerHTML = val;
+        }
+      });
+      const firstF = schema[0];
+      if (firstF) {
+        const prev = document.getElementById('epreview-' + entry.id);
+        if (prev) {
+          const el = firstF.type === 'input'
+            ? null
+            : document.getElementById('ri-' + entry.id + '-' + firstF.key);
+          prev.textContent = el
+            ? (el.innerText.trim() || '(empty)')
+            : (entry.fields[firstF.key] || '(empty)');
         }
       }
-    });
-  });
-
-  tex += '\n\\end{document}\n';
-  return tex;
-}
-
-/* ═══ MODALS ════════════════════════════════════════════ */
-function openLatexModal() {
-  syncAll();
-  document.getElementById('latex-code').textContent = buildLatex();
-  document.getElementById('latex-modal').classList.add('open');
-}
-function openPdfModal() {
-  syncAll(); pdfBlob = null;
-  document.getElementById('pdf-frame').style.display    = 'none';
-  document.getElementById('pdf-frame').src              = '';
-  document.getElementById('btn-dl-pdf').style.display   = 'none';
-  document.getElementById('debug-toggle').style.display = 'none';
-  document.getElementById('debug-log').textContent      = '';
-  document.getElementById('debug-log').classList.remove('visible');
-  document.getElementById('pdf-status').innerHTML = 'Compiling\u2026&nbsp;<span class="spinner"></span>';
-  document.getElementById('pdf-modal').classList.add('open');
-  compilePdf();
-}
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(bd => {
-  bd.addEventListener('click', e => { if (e.target === bd) closeModal(bd.id); });
-});
-function toggleDebug() {
-  const open = document.getElementById('debug-log').classList.toggle('visible');
-  document.getElementById('debug-toggle').textContent = (open ? '▼' : '▶') + ' Debug log';
-}
-
-/* ═══ PDF COMPILATION ═══════════════════════════════════ */
-let debugLines = [];
-const dbg = msg => {
-  debugLines.push(msg);
-  document.getElementById('debug-log').textContent = debugLines.join('\n');
-};
-
-async function compilePdf() {
-  const tex    = buildLatex();
-  const status = document.getElementById('pdf-status');
-  debugLines   = [];
-  dbg('[1] Trying latex.ytotech.com...');
-
-  const showOK = async blob => {
-    pdfBlob = blob;
-    const frame = document.getElementById('pdf-frame');
-    frame.src = URL.createObjectURL(pdfBlob); frame.style.display = 'block';
-    document.getElementById('btn-dl-pdf').style.display   = 'inline-flex';
-    document.getElementById('debug-toggle').style.display = 'inline';
-    status.textContent = '';
-    dbg('OK — ' + (pdfBlob.size/1024).toFixed(1) + ' KB');
-  };
-
-  try {
-    const res = await fetch('https://latex.ytotech.com/builds/sync', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ compiler: 'pdflatex', resources: [{ main: true, content: tex }] }),
-    });
-    dbg('[2] HTTP ' + res.status); const ct = res.headers.get('content-type') || '';
-    if (res.ok && ct.includes('pdf')) { await showOK(await res.blob()); return; }
-    const body = await res.text();
-    dbg('[3] Error:\n' + body.slice(0,600));
-    throw new Error(body.split('\n').find(l => l.startsWith('!')) || 'Compilation failed.');
-  } catch(err) {
-    dbg('[ERR ytotech] ' + err.name + ': ' + err.message);
-    if (err.name !== 'TypeError') {
-      document.getElementById('debug-toggle').style.display = 'inline';
-      status.innerHTML = '<span style="color:var(--danger)">&#9888; ' + esc(err.message) + '</span>';
-      return;
     }
-    dbg('[4] Fallback: texlive.net...');
-    const fd = new FormData();
-    fd.append('filecontents[]', new Blob([tex],{type:'text/plain'}), 'cv.tex');
-    fd.append('filename[]','cv.tex'); fd.append('engine','pdflatex'); fd.append('return','pdf');
-    try {
-      const r2 = await fetch('https://texlive.net/cgi-bin/latexcgi', {method:'POST',body:fd});
-      dbg('[5] texlive.net HTTP ' + r2.status);
-      const ct2 = r2.headers.get('content-type') || '';
-      if (ct2.includes('pdf')) { await showOK(await r2.blob()); return; }
-      const log2 = await r2.text(); dbg('[6] texlive error:\n' + log2.slice(0,500));
-    } catch(e2) { dbg('[ERR texlive] ' + e2.message); }
-    document.getElementById('debug-toggle').style.display = 'inline';
-    status.innerHTML = '<span style="color:var(--danger)">&#9888; Both APIs unreachable. Use <b>Open in Overleaf</b>.</span>';
-  }
-}
 
-/**
- * Open the .tex in a new Overleaf project.
- *
- * Overleaf requires multipart/form-data with fields named snip_name[] and snip[].
- * The textarea must NOT be display:none — we use visibility:hidden + position:absolute
- * instead so the form element is rendered (thus submitted) but not visible.
- * We keep the form in the DOM for 3 s to ensure the browser completes the POST
- * before we clean up.
- */
-/**
- * Open the .tex in a new Overleaf project.
- *
- * Overleaf requires multipart/form-data with snip_name[] and snip[].
- * - snip_name[]: input type="hidden" — always submitted regardless of visibility
- * - snip[]:     textarea positioned off-screen with opacity:0 (NOT visibility:hidden
- *               or display:none, which some browsers exclude from submission)
- * The form is kept in DOM for 5 s to ensure the browser completes the POST.
- */
-function openOverleaf() {
-  syncAll();
-  const tex  = buildLatex();
-  const form = document.createElement('form');
-  form.method  = 'POST';
-  form.action  = 'https://www.overleaf.com/docs';
-  form.target  = '_blank';
-  form.enctype = 'multipart/form-data';
-  form.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden';
-
-  // snip_name[]: type=hidden is always submitted
-  const nameEl = document.createElement('input');
-  nameEl.type  = 'hidden';
-  nameEl.name  = 'snip_name[]';
-  nameEl.value = 'main.tex';
-  form.appendChild(nameEl);
-
-  // snip[]: must be a rendered (non-hidden) element for multipart submission;
-  // we make it invisible via opacity:0 positioned absolutely off-screen
-  const snipEl = document.createElement('textarea');
-  snipEl.name  = 'snip[]';
-  snipEl.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
-  snipEl.value = tex;
-  form.appendChild(snipEl);
-
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 5000);
-}
-
-function downloadPdf() { if (pdfBlob) triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf'); }
-function copyLatex()   { navigator.clipboard.writeText(document.getElementById('latex-code').textContent).then(() => alert('Copied!')); }
-function downloadLatex() {
-  triggerDownload(URL.createObjectURL(new Blob([document.getElementById('latex-code').textContent],{type:'text/plain'})), 'cv.tex');
-}
-function triggerDownload(url, filename) {
-  const a = document.createElement('a'); a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-
-/* ═══ BUG REPORT ════════════════════════════════════════ */
-document.getElementById('btn-bug').addEventListener('click', () => {
-  document.getElementById('bug-status').textContent = '';
-  document.getElementById('bug-modal').classList.add('open');
-});
-async function submitBugReport() {
-  const name = document.getElementById('bug-name').value.trim();
-  const email= document.getElementById('bug-email').value.trim();
-  const type = document.getElementById('bug-type').value;
-  const desc = document.getElementById('bug-desc').value.trim();
-  const st   = document.getElementById('bug-status');
-  if (!desc) { st.innerHTML = '<span style="color:var(--danger)">Please fill in the description.</span>'; return; }
-  st.innerHTML = 'Sending\u2026 <span class="spinner"></span>';
-  try {
-    const res = await fetch('https://formspree.io/f/mrbarvev', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, type, description: desc, source: 'cv-generator' }),
-    });
-    if (res.ok) {
-      st.innerHTML = '<span style="color:#1e5e3a">&#10003; Sent! Thank you.</span>';
-      document.getElementById('bug-desc').value = '';
-      setTimeout(() => closeModal('bug-modal'), 1800);
-    } else if (res.status === 402) {
-      st.innerHTML = '<span style="color:var(--danger)">Monthly limit reached.</span>';
-    } else {
-      st.innerHTML = '<span style="color:var(--danger)">Failed to send. Try again.</span>';
+    /* ═══ SECTION / ENTRY MANAGEMENT ═══════════════════════ */
+    function addSection(type) {
+      const sec = { id: uid(), type, name: TYPE_LABELS[type] || 'Section', entries: [] };
+      state.sections.push(sec);
+      if (type === 'pagebreak') renderPagebreak(sec);
+      else { renderSection(sec); if (SCHEMAS[type]?.length) addEntry(sec.id); }
+      renderSidebars();
     }
-  } catch { st.innerHTML = '<span style="color:var(--danger)">Network error.</span>'; }
-}
+    function removeSection(secId) {
+      state.sections = state.sections.filter(s => s.id !== secId);
+      document.getElementById('sec-' + secId)?.remove();
+      renderSidebars();
+    }
+    function updateSectionName(secId, val) {
+      const sec = state.sections.find(s => s.id === secId);
+      if (sec) sec.name = val;
+      renderSidebars();
+    }
+    function addEntry(secId) {
+      const sec = state.sections.find(s => s.id === secId);
+      if (!sec) return;
+      const schema = SCHEMAS[sec.type] || [];
+      const entry = { id: uid(), fields: Object.fromEntries(schema.map(f => [f.key, ''])) };
+      sec.entries.push(entry);
+      renderEntry(secId, entry);
+    }
+    function removeEntry(secId, entryId) {
+      const sec = state.sections.find(s => s.id === secId);
+      if (sec) sec.entries = sec.entries.filter(e => e.id !== entryId);
+      document.getElementById('entry-' + entryId)?.remove();
+    }
+    function toggleEntry(entryId) {
+      document.getElementById('ebody-' + entryId)?.classList.toggle('open');
+      document.getElementById('etog-' + entryId)?.classList.toggle('open');
+    }
 
-/* ═══ DEMO DATA ══════════════════════════════════════════ */
-document.getElementById('btn-load-demo').addEventListener('click', loadDemo);
+    /* ═══ SIDEBARS (desktop + mobile) ══════════════════════ */
+    function renderSidebars() {
+      renderSidebarInto('sidebar-list');
+      renderSidebarInto('mob-sidebar-list');
+    }
 
-function loadDemo() {
-  setPiValue('name',     'Alex Fontaine');
-  setPiValue('title',    'Engineering student — Data Science & AI track');
-  setPiValue('email',    'alex.fontaine@centralesupelec.fr');
-  setPiValue('website',  'alexfontaine.dev/');
-  setPiValue('github',   'https://github.com/alexfontaine');
-  setPiValue('linkedin', 'https://www.linkedin.com/in/alex-fontaine/');
+    function renderSidebarInto(containerId) {
+      const list = document.getElementById(containerId);
+      if (!list) return;
+      list.innerHTML = '';
+      state.sections.forEach((sec, i) => {
+        const item = document.createElement('div');
+        item.className = 'sidebar-item' + (sec.type === 'pagebreak' ? ' is-pagebreak' : '');
+        const label = sec.type === 'pagebreak' ? '↵ Page break' : (sec.name || sec.type);
+        item.innerHTML =
+          '<span class="sidebar-name" onclick="scrollToSection(\'' + sec.id + '\')" title="' + esc(label) + '">'
+          + esc(label) + '</span>'
+          + '<div class="sidebar-btns">'
+          + '<button class="sidebar-btn" onclick="moveSec(\'' + sec.id + '\',-1)" '
+          + (i === 0 ? 'disabled' : '') + ' title="Up">&#8593;</button>'
+          + '<button class="sidebar-btn" onclick="moveSec(\'' + sec.id + '\',1)" '
+          + (i === state.sections.length - 1 ? 'disabled' : '') + ' title="Down">&#8595;</button>'
+          + '</div>';
+        list.appendChild(item);
+      });
+    }
 
-  state.sections = [];
-  document.getElementById('sections-list').innerHTML = '';
+    function scrollToSection(secId) {
+      document.getElementById('sec-' + secId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // close mobile overlay if open
+      document.getElementById('mob-overlay').classList.remove('open');
+    }
 
-  function mk(type, name, rows) {
-    const sec = { id: uid(), type, name, entries: [] };
-    state.sections.push(sec);
-    if (type === 'pagebreak') { renderPagebreak(sec); renderSidebars(); return; }
-    renderSection(sec);
-    rows.forEach(fields => {
-      const e = { id: uid(), fields };
-      sec.entries.push(e);
-      renderEntry(sec.id, e);
-      setEntryValues(e, sec);
+    function moveSec(secId, dir) {
+      const idx = state.sections.findIndex(s => s.id === secId);
+      const t = idx + dir;
+      if (t < 0 || t >= state.sections.length) return;
+      [state.sections[idx], state.sections[t]] = [state.sections[t], state.sections[idx]];
+      const domList = document.getElementById('sections-list');
+      state.sections.forEach(sec => {
+        const card = document.getElementById('sec-' + sec.id);
+        if (card) domList.appendChild(card);
+      });
+      renderSidebars();
+    }
+
+    /* ═══ RENDER ════════════════════════════════════════════ */
+    function renderPagebreak(sec) {
+      const list = document.getElementById('sections-list');
+      const card = document.createElement('div');
+      card.className = 'pagebreak-card'; card.id = 'sec-' + sec.id;
+      card.draggable = true; card.dataset.secId = sec.id;
+      card.innerHTML =
+        '<div class="pagebreak-header"><span class="section-drag-handle">&#10783;</span>'
+        + '<span class="pagebreak-label">&#8629; PAGE BREAK</span>'
+        + '<div class="section-actions"><button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button></div>'
+        + '</div>';
+      list.appendChild(card); setupSectionDrag(card);
+    }
+
+    function renderSection(sec) {
+      const list = document.getElementById('sections-list');
+      const card = document.createElement('div');
+      card.className = 'section-card'; card.id = 'sec-' + sec.id;
+      card.draggable = true; card.dataset.secId = sec.id;
+      card.innerHTML =
+        '<div class="section-header"><span class="section-drag-handle">&#10783;</span>'
+        + '<input class="section-name" type="text" value="' + esc(sec.name) + '"'
+        + ' onchange="updateSectionName(\'' + sec.id + '\',this.value)" title="Rename"/>'
+        + '<span class="section-type-label">[' + sec.type + ']</span>'
+        + '<div class="section-actions">'
+        + '<button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Entry</button>'
+        + '<button class="btn sm danger" onclick="removeSection(\'' + sec.id + '\')">&#10005;</button>'
+        + '</div></div>'
+        + '<div class="section-body"><div class="entries-list" id="entries-' + sec.id + '"></div>'
+        + '<div class="add-entry-row"><button class="btn sm" onclick="addEntry(\'' + sec.id + '\')">+ Add entry</button></div></div>';
+      list.appendChild(card); setupSectionDrag(card);
+    }
+
+    function renderEntry(secId, entry) {
+      const sec = state.sections.find(s => s.id === secId);
+      const schema = SCHEMAS[sec.type] || [];
+      const list = document.getElementById('entries-' + secId);
+      const card = document.createElement('div');
+      card.className = 'entry-card'; card.id = 'entry-' + entry.id;
+      card.draggable = true; card.dataset.entryId = entry.id; card.dataset.secId = secId;
+      const fHtml = schema.map(f => fieldHtml(secId, entry.id, f)).join('');
+      const preview = (schema[0]?.key && entry.fields[schema[0].key]) || '(empty)';
+      card.innerHTML =
+        '<div class="entry-header" onclick="toggleEntry(\'' + entry.id + '\')">'
+        + '<span class="entry-drag-handle" onclick="event.stopPropagation()">&#10783;</span>'
+        + '<span class="entry-title-preview" id="epreview-' + entry.id + '">' + esc(preview) + '</span>'
+        + '<span class="entry-toggle open" id="etog-' + entry.id + '">&#9662;</span></div>'
+        + '<div class="entry-body open" id="ebody-' + entry.id + '"><div class="entry-fields">' + fHtml + '</div></div>'
+        + '<div class="entry-footer"><button class="btn sm danger" onclick="removeEntry(\'' + secId + '\',\'' + entry.id + '\')">&#10005; Remove</button></div>';
+      list.appendChild(card); setupEntryDrag(card);
+    }
+
+    /* ═══ DRAG & DROP — AUTO SCROLL ════════════════════════ */
+    let autoScrollId = null;
+    document.addEventListener('dragover', e => {
+      const ZONE = 90, SPEED = 15;
+      clearInterval(autoScrollId);
+      if (e.clientY < ZONE) autoScrollId = setInterval(() => window.scrollBy(0, -SPEED), 16);
+      else if (e.clientY > window.innerHeight - ZONE) autoScrollId = setInterval(() => window.scrollBy(0, SPEED), 16);
     });
-    renderSidebars();
-  }
+    document.addEventListener('dragend', () => { clearInterval(autoScrollId); autoScrollId = null; });
 
-  mk('education', 'Education', [
-    { degree: 'M.Sc. in Data Science & Artificial Intelligence',
-      institution: 'École CentraleSupélec', note: '',
-      dateRange: 'Sep 2024 -- Present', location: 'Gif-sur-Yvette, France' },
-    { degree: "Diplôme d'ingénieur (Engineering Degree)",
-      institution: 'École CentraleSupélec', note: 'Valedictorian, class of 2024',
-      dateRange: 'Sep 2021 -- Aug 2024', location: 'Gif-sur-Yvette, France' },
-    { degree: 'Classes Préparatoires MPSI / MP*',
-      institution: 'Lycée Louis-le-Grand', note: '',
-      dateRange: 'Sep 2019 -- Aug 2021', location: 'Paris, France' },
-  ]);
+    /* ═══ DRAG & DROP — SECTIONS ════════════════════════════ */
+    let dragSec = null;
+    function setupSectionDrag(card) {
+      card.addEventListener('dragstart', e => { dragSec = card; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); setTimeout(() => card.classList.add('dragging'), 0); });
+      card.addEventListener('dragend', () => { card.classList.remove('dragging'); document.querySelectorAll('.section-card,.pagebreak-card').forEach(c => c.classList.remove('drag-over')); dragSec = null; syncSectionOrder(); renderSidebars(); });
+      card.addEventListener('dragover', e => { if (!dragSec || dragSec === card) return; e.preventDefault(); card.classList.add('drag-over'); });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault(); card.classList.remove('drag-over');
+        if (!dragSec || dragSec === card) return;
+        const rect = card.getBoundingClientRect();
+        const list = document.getElementById('sections-list');
+        if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragSec, card);
+        else list.insertBefore(dragSec, card.nextSibling);
+      });
+    }
+    function syncSectionOrder() {
+      const cards = [...document.getElementById('sections-list').children];
+      const byId = Object.fromEntries(state.sections.map(s => [s.id, s]));
+      state.sections = cards.map(c => byId[c.dataset.secId]).filter(Boolean);
+    }
 
-  mk('publication', 'Publications', [
-    { title: 'Uncertainty Quantification in Neural Load Forecasting for Smart Grids',
-      venue: 'Workshop on ML for Physical Sciences, NeurIPS, 2024' },
-    { title: 'Sparse Graph Attention for Multivariate Time-Series Anomaly Detection',
-      venue: 'ECML-PKDD, 2025' },
-  ]);
+    /* ═══ DRAG & DROP — ENTRIES ════════════════════════════ */
+    let dragEntry = null;
+    function setupEntryDrag(card) {
+      card.addEventListener('dragstart', e => { dragEntry = card; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); setTimeout(() => card.classList.add('dragging'), 0); });
+      card.addEventListener('dragend', () => { card.classList.remove('dragging'); document.querySelectorAll('.entry-card').forEach(c => c.classList.remove('drag-over')); dragEntry = null; syncEntryOrders(); });
+      card.addEventListener('dragover', e => { if (!dragEntry || dragEntry === card || dragEntry.dataset.secId !== card.dataset.secId) return; e.preventDefault(); e.stopPropagation(); card.classList.add('drag-over'); });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation(); card.classList.remove('drag-over');
+        if (!dragEntry || dragEntry === card || dragEntry.dataset.secId !== card.dataset.secId) return;
+        const list = document.getElementById('entries-' + card.dataset.secId);
+        const rect = card.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragEntry, card);
+        else list.insertBefore(dragEntry, card.nextSibling);
+      });
+    }
+    function syncEntryOrders() {
+      state.sections.forEach(sec => {
+        const list = document.getElementById('entries-' + sec.id);
+        if (!list) return;
+        const byId = Object.fromEntries(sec.entries.map(e => [e.id, e]));
+        sec.entries = [...list.querySelectorAll('.entry-card')].map(c => byId[c.dataset.entryId]).filter(Boolean);
+      });
+    }
+    function syncAll() { syncEntryOrders(); syncSectionOrder(); }
 
-  mk('experience', 'Professional Experience', [
-    { role: 'Research Internship',
-      org: 'CEA — Commissariat à l\'Énergie Atomique',
-      dateRange: 'Jun 2024 -- Aug 2024', location: 'Saclay, France',
-      description: 'Developed a Transformer-based forecasting pipeline for short-term electrical grid load prediction. Designed custom positional encodings for irregular time series and benchmarked against LSTM and N-BEATS baselines. Reduced mean absolute error by 14% relative to the production baseline on a three-year dataset of smart meter readings.',
-      contact: 'Dr. Claire Dumont (CEA/DRT)' },
-    { role: 'Data Science Internship',
-      org: 'Airbus Operations',
-      dateRange: 'Jun 2023 -- Aug 2023', location: 'Toulouse, France',
-      description: 'Built an anomaly detection system for aircraft sensor data streams using an autoencoder combined with a sliding-window statistical test. Integrated the pipeline into an existing MLOps workflow (MLflow, Docker) and validated it on simulated fault injection scenarios across 12 sensor channels.',
-      contact: '' },
-    { role: 'Research Assistant',
-      org: 'MICS Laboratory, École CentraleSupélec',
-      dateRange: 'Jan 2024 -- May 2024', location: 'Gif-sur-Yvette, France',
-      description: 'Studied the robustness of image classifiers under distribution shift. Implemented augmentation strategies (AugMix, CutMix, RandAugment) and evaluated their effect on out-of-distribution generalization across four benchmark datasets. Contributed to an ongoing survey on robustness evaluation protocols.',
-      contact: 'Prof. Marc Tessier (MICS, CentraleSupélec)' },
-  ]);
+    /* ═══ LATEX GENERATION ═════════════════════════════════ */
+    function buildLatex() {
+      const hex = themeHex;
+      const colored = hex !== '111111';
+      const RL = '\\RaggedLeft\\arraybackslash';
+      const colSpec = '>{' + RL + '}';
+      const tabCols = '@{}p{0.70\\textwidth}@{\\extracolsep{\\fill}}' + colSpec + 'p{0.28\\textwidth}@{}';
 
-  mk('pagebreak', 'Page Break', []);
+      let tex = '';
+      tex += '\\documentclass[10.4pt,a4paper]{article}\n';
+      tex += '\\usepackage[a4paper,margin=1.4cm]{geometry}\n';
+      tex += '\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n';
+      tex += '\\usepackage{newtxtext,newtxmath}\n\\usepackage{fontawesome5}\n';
+      tex += '\\usepackage[hidelinks]{hyperref}\n\\usepackage{xcolor}\n';
+      tex += '\\usepackage{enumitem}\n\\usepackage{tabularx}\n\\usepackage{array}\n';
+      tex += '\\usepackage{ragged2e}\n\\usepackage{titlesec}\n\\usepackage{setspace}\n';
+      tex += '\\usepackage{parskip}\n\\usepackage{multicol}\n\\usepackage{needspace}\n';
+      if (colored) tex += '\\definecolor{themecolor}{HTML}{' + hex.toUpperCase() + '}\n';
+      tex += '\\setlength{\\parindent}{0pt}\n\\setlength{\\parskip}{0pt}\n\\setlength{\\tabcolsep}{0pt}\n';
+      tex += '\\linespread{1.02}\n\\pagestyle{empty}\n\\urlstyle{same}\n';
+      tex += '\\setlist[itemize]{\n    leftmargin=1.1em,\n    itemsep=0.05em,\n    topsep=0.05em,\n    parsep=0em,\n    partopsep=0em\n}\n';
+      tex += '\\titleformat{\\section}\n  {\\Large\\bfseries' + (colored ? '\\color{themecolor}' : '') + '}\n  {}{0pt}{\\MakeUppercase}[\\vspace{0.15em}\\titlerule]\n';
+      tex += '\\titlespacing*{\\section}{0pt}{0.6em}{0.25em}\n';
+      tex += '\\newcommand{\\cvheadername}[1]{{\\fontsize{25}{28}\\selectfont\\bfseries' + (colored ? '\\color{themecolor}' : '') + ' #1\\par}}\n';
+      tex += '\\newcommand{\\cvheadersubtitle}[1]{\\vspace{0.35em}{\\fontsize{15}{18}\\selectfont\\itshape #1\\par}}\n';
+      tex += '\\newcommand{\\contactline}[1]{\\vspace{0.8em}{\\normalsize #1\\par}}\n';
+      tex += '\\newcommand{\\eduentry}[5]{%\n';
+      tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+      tex += '        {\\large\\bfseries #1} & {\\large #4} \\\\\n';
+      tex += '        {\\large\\itshape #2} & {\\large #5} \\\\\n';
+      tex += '        \\if\\relax\\detokenize{#3}\\relax\n        \\else\n        {\\large #3} & \\\\\n        \\fi\n';
+      tex += '    \\end{tabular*}\\vspace{0.15em}\n}\n';
+      tex += '\\newcommand{\\pubentry}[2]{{\\large\\bfseries #1\\par}{\\large\\itshape #2\\par}\\vspace{0.45em}}\n';
+      tex += '\\newcommand{\\experienceentry}[6]{%\n    \\Needspace{10\\baselineskip}\n';
+      tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+      tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n        {\\large\\itshape #2} & {\\large #4} \\\\\n    \\end{tabular*}\n';
+      tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #5}\n    \\end{itemize}\n';
+      tex += '    {\\large\\itshape #6\\par}\\vspace{0.2em}\n}\n';
+      tex += '\\newcommand{\\experienceentrynocon}[5]{%\n    \\Needspace{9\\baselineskip}\n';
+      tex += '    \\begin{tabular*}{\\textwidth}{' + tabCols + '}\n';
+      tex += '        {\\large\\bfseries #1} & {\\large #3} \\\\\n        {\\large\\itshape #2} & {\\large #4} \\\\\n    \\end{tabular*}\n';
+      tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #5}\n    \\end{itemize}\\vspace{0.2em}\n}\n';
+      tex += '\\newcommand{\\projectentry}[3]{{\\large\\bfseries #1\\ \\href{#3}{\\faLink}\\par}\n';
+      tex += '    \\begin{itemize}[leftmargin=1.1em,topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt]\n        \\item {\\large #2}\n    \\end{itemize}\\vspace{0.1em}\n}\n';
+      tex += '\\newcommand{\\skillblock}[2]{{\\large\\bfseries #1\\par}\n    \\begin{itemize}\\item {\\large #2}\\end{itemize}\\vspace{0.35em}\n}\n';
+      tex += '\\begin{document}\n';
 
-  mk('project', 'Projects', [
-    { title: 'Satellite Image Segmentation for Land Use Classification',
-      url: 'https://github.com/alexfontaine/satellite-segmentation',
-      description: 'Trained a U-Net model with a ResNet-50 encoder on the EuroSAT and DeepGlobe datasets for multi-class land cover segmentation. Applied test-time augmentation and a CRF post-processing step, reaching a mean IoU of 81.3% on the held-out test split.' },
-    { title: 'Real-Time Speech Enhancement with Lightweight CNNs',
-      url: 'https://github.com/alexfontaine/speech-denoising',
-      description: 'Designed a depthwise-separable convolutional network for single-channel speech denoising with sub-5 ms inference latency on CPU. Trained on a synthetic mixture of clean speech (LibriSpeech) and environmental noise, achieving a PESQ improvement of +1.4 over the noisy baseline.' },
-    { title: 'Autonomous Robot Navigation in Unknown Environments',
-      url: 'https://github.com/alexfontaine/robot-nav',
-      description: 'Implemented a ROS-based navigation stack combining frontier exploration with an obstacle avoidance policy trained via PPO. Evaluated in Gazebo simulation and on a physical TurtleBot, achieving complete map coverage in under 4 minutes on 6x6 m floor plans.' },
-    { title: 'Collaborative Filtering Recommender System',
-      url: 'https://github.com/alexfontaine/recsys',
-      description: 'Built an ALS matrix factorization model for implicit feedback, then extended it with a neural two-tower architecture. Deployed a Flask API serving recommendations in under 20 ms, evaluated on the MovieLens-1M and LastFM datasets.' },
-    { title: "Subset-Python Compiler in OCaml",
-      url: 'https://github.com/alexfontaine/pyt-compiler',
-      description: 'Implemented a compiler for a typed subset of Python targeting x86-64 assembly. Built a lexer (Ocamllex), parser (Menhir), Hindley-Milner type inference pass, and register allocation via graph coloring.' },
-  ]);
+      const email = piText('email'), emailD = piLatex('email');
+      const website = piText('website'), websiteD = piLatex('website');
+      const github = piText('github'), githubD = piLatex('github');
+      const linkedin = piText('linkedin'), linkedinD = piLatex('linkedin');
 
-  mk('skills', 'Skills', [
-    { category: 'Programming:', items: 'Python (PyTorch, TensorFlow, Scikit-Learn, NumPy, Pandas), C++, Java, MATLAB, OCaml, SQL' },
-    { category: 'Artificial Intelligence:', items: 'Deep Learning, Time-Series Analysis, Computer Vision, Optimization, MLOps (Docker, MLflow)' },
-    { category: 'Tools:', items: 'Git, Linux, LaTeX, ROS, Slurm (Cluster Computing)' },
-  ]);
+      tex += '\\begin{center}\n';
+      tex += '    \\cvheadername{' + piLatex('name') + '}\n';
+      tex += '    \\cvheadersubtitle{' + piLatex('title') + '}\n\n';
+      tex += '    \\contactline{\n        \\faEnvelope\\ \\href{mailto:' + email + '}{' + emailD + '}';
+      if (website) tex += '\n        \\hspace{1.2em}\n        \\faLink\\ \\href{https://' + website + '}{' + websiteD + '}';
+      if (github) tex += '\n        \\hspace{1.2em}\n        \\faGithub\\ \\href{' + github + '}{' + githubD + '}';
+      tex += '\n    }\n\n';
+      if (linkedin) tex += '    \\contactline{\n        \\faLinkedin\\ \\href{' + linkedin + '}{' + linkedinD + '}\n    }\n';
+      tex += '\\end{center}\n';
 
-  mk('achievements', 'Achievements', [
-    { text: '2nd place at the CentraleSupélec internal Kaggle challenge on predictive maintenance (92 teams)' },
-    { text: 'Finalist at the Agorize AI for Energy Challenge organized by EDF' },
-  ]);
+      const rt = v => htmlToLatex(v || '');
+      const lp = v => le(v || '');
 
-  mk('languages', 'Languages', [
-    { language: 'French',  level: 'Native',       certs: '' },
-    { language: 'English', level: 'Fluent',        certs: 'TOEIC: 970/990' },
-    { language: 'Spanish', level: 'Intermediate',  certs: '' },
-  ]);
-}
+      state.sections.forEach(sec => {
+        if (sec.type === 'pagebreak') { tex += '\n\\newpage\n'; return; }
+        tex += '\n';
+        if (sec.name.trim()) tex += '\\section{' + le(sec.name) + '}\n\n';
 
-/* ── Init ── */
-renderPersonalInfo();
-addSection('education');
-</script>
+        if (sec.type === 'languages' && sec.entries.length) {
+          tex += '\\begin{tabular*}{\\textwidth}{@{}p{0.48\\textwidth}@{\\extracolsep{\\fill}}p{0.48\\textwidth}@{}}\n';
+          for (let i = 0; i < sec.entries.length; i += 2) {
+            const L = sec.entries[i], R = sec.entries[i + 1];
+            const getCerts = e => {
+              if (!e?.fields.certs) return [];
+              const el = document.getElementById('ri-' + e.id + '-certs');
+              const raw = el ? el.innerText.trim() : '';
+              return raw.split(/\s*[—–\-]\s*|\n/).map(s => le(s.trim())).filter(Boolean);
+            };
+            const Ln = rt(L.fields.language), Ll = rt(L.fields.level), Lc = getCerts(L);
+            const Rn = R ? rt(R.fields.language) : '', Rl = R ? rt(R.fields.level) : '', Rc = R ? getCerts(R) : [];
+            tex += '    {\\large\\bfseries ' + Ln + '} & ' + (Rn ? '{\\large\\bfseries ' + Rn + '}' : '') + ' \\\\\n';
+            tex += '    {\\large ' + Ll + '} & ' + (Rl ? '{\\large ' + Rl + '}' : '') + ' \\\\\n';
+            const maxC = Math.max(Lc.length, Rc.length);
+            for (let j = 0; j < maxC; j++) {
+              tex += '    ' + (Lc[j] ? '{\\large ' + Lc[j] + '}' : '') + ' & ' + (Rc[j] ? '{\\large ' + Rc[j] + '}' : '') + ' \\\\\n';
+            }
+            if (i + 2 < sec.entries.length) tex += '    [0.9em]\n';
+          }
+          tex += '\\end{tabular*}\n\n';
+          return;
+        }
+
+        sec.entries.forEach(entry => {
+          const f = entry.fields;
+          switch (sec.type) {
+            case 'education':
+              tex += '\\eduentry\n{' + rt(f.degree) + '}\n{' + rt(f.institution) + '}\n{' + rt(f.note) + '}\n'
+                + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n\n';
+              break;
+            case 'publication':
+              tex += '\\pubentry\n{' + rt(f.title) + '}\n{' + rt(f.venue) + '}\n\n';
+              break;
+            case 'experience':
+              if (f.contact && f.contact.trim()) {
+                tex += '\\experienceentry\n{' + rt(f.role) + '}\n{' + rt(f.org) + '}\n'
+                  + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n'
+                  + '{' + rt(f.description) + '}\n{Contact: ' + lp(f.contact) + '}\n\n';
+              } else {
+                tex += '\\experienceentrynocon\n{' + rt(f.role) + '}\n{' + rt(f.org) + '}\n'
+                  + '{' + rt(f.dateRange) + '}\n{' + rt(f.location) + '}\n'
+                  + '{' + rt(f.description) + '}\n\n';
+              }
+              break;
+            case 'project':
+              tex += '\\projectentry\n{' + rt(f.title) + '}\n{' + rt(f.description) + '}\n{' + lp(f.url) + '}\n\n';
+              break;
+            case 'skills':
+              tex += '\\skillblock\n{' + rt(f.category) + '}\n{' + rt(f.items) + '}\n\n';
+              break;
+            case 'achievements':
+              tex += '{\\large\\bfseries ' + rt(f.text) + '\\par}\n\\vspace{0.5em}\n\n';
+              break;
+            case 'generic':
+            default: {
+              const c = rt(f.content);
+              if (c.trim()) tex += '{\\large ' + c + '\\par}\n\n';
+              break;
+            }
+          }
+        });
+      });
+
+      tex += '\n\\end{document}\n';
+      return tex;
+    }
+
+    /* ═══ MODALS ════════════════════════════════════════════ */
+    function openLatexModal() {
+      syncAll();
+      document.getElementById('latex-code').textContent = buildLatex();
+      document.getElementById('latex-modal').classList.add('open');
+    }
+    function openPdfModal() {
+      syncAll(); pdfBlob = null;
+      document.getElementById('pdf-frame').style.display = 'none';
+      document.getElementById('pdf-frame').src = '';
+      document.getElementById('btn-dl-pdf').style.display = 'none';
+      document.getElementById('debug-toggle').style.display = 'none';
+      document.getElementById('debug-log').textContent = '';
+      document.getElementById('debug-log').classList.remove('visible');
+      document.getElementById('pdf-status').innerHTML = 'Compiling\u2026&nbsp;<span class="spinner"></span>';
+      document.getElementById('pdf-modal').classList.add('open');
+      compilePdf();
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+      bd.addEventListener('click', e => { if (e.target === bd) closeModal(bd.id); });
+    });
+    function toggleDebug() {
+      const open = document.getElementById('debug-log').classList.toggle('visible');
+      document.getElementById('debug-toggle').textContent = (open ? '▼' : '▶') + ' Debug log';
+    }
+
+    /* ═══ PDF COMPILATION ═══════════════════════════════════ */
+    let debugLines = [];
+    const dbg = msg => {
+      debugLines.push(msg);
+      document.getElementById('debug-log').textContent = debugLines.join('\n');
+    };
+
+    async function compilePdf() {
+      const tex = buildLatex();
+      const status = document.getElementById('pdf-status');
+      debugLines = [];
+      dbg('[1] Trying latex.ytotech.com...');
+
+      const showOK = async blob => {
+        pdfBlob = blob;
+        const frame = document.getElementById('pdf-frame');
+        frame.src = URL.createObjectURL(pdfBlob); frame.style.display = 'block';
+        document.getElementById('btn-dl-pdf').style.display = 'inline-flex';
+        document.getElementById('debug-toggle').style.display = 'inline';
+        status.textContent = '';
+        dbg('OK — ' + (pdfBlob.size / 1024).toFixed(1) + ' KB');
+      };
+
+      try {
+        const res = await fetch('https://latex.ytotech.com/builds/sync', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ compiler: 'pdflatex', resources: [{ main: true, content: tex }] }),
+        });
+        dbg('[2] HTTP ' + res.status); const ct = res.headers.get('content-type') || '';
+        if (res.ok && ct.includes('pdf')) { await showOK(await res.blob()); return; }
+        const body = await res.text();
+        dbg('[3] Error:\n' + body.slice(0, 600));
+        throw new Error(body.split('\n').find(l => l.startsWith('!')) || 'Compilation failed.');
+      } catch (err) {
+        dbg('[ERR ytotech] ' + err.name + ': ' + err.message);
+        if (err.name !== 'TypeError') {
+          document.getElementById('debug-toggle').style.display = 'inline';
+          status.innerHTML = '<span style="color:var(--danger)">&#9888; ' + esc(err.message) + '</span>';
+          return;
+        }
+        dbg('[4] Fallback: texlive.net...');
+        const fd = new FormData();
+        fd.append('filecontents[]', new Blob([tex], { type: 'text/plain' }), 'cv.tex');
+        fd.append('filename[]', 'cv.tex'); fd.append('engine', 'pdflatex'); fd.append('return', 'pdf');
+        try {
+          const r2 = await fetch('https://texlive.net/cgi-bin/latexcgi', { method: 'POST', body: fd });
+          dbg('[5] texlive.net HTTP ' + r2.status);
+          const ct2 = r2.headers.get('content-type') || '';
+          if (ct2.includes('pdf')) { await showOK(await r2.blob()); return; }
+          const log2 = await r2.text(); dbg('[6] texlive error:\n' + log2.slice(0, 500));
+        } catch (e2) { dbg('[ERR texlive] ' + e2.message); }
+        document.getElementById('debug-toggle').style.display = 'inline';
+        status.innerHTML = '<span style="color:var(--danger)">&#9888; Both APIs unreachable. Use <b>Open in Overleaf</b>.</span>';
+      }
+    }
+
+    /**
+     * Open the .tex in a new Overleaf project.
+     *
+     * Overleaf requires multipart/form-data with fields named snip_name[] and snip[].
+     * The textarea must NOT be display:none — we use visibility:hidden + position:absolute
+     * instead so the form element is rendered (thus submitted) but not visible.
+     * We keep the form in the DOM for 3 s to ensure the browser completes the POST
+     * before we clean up.
+     */
+    /**
+     * Open the .tex in a new Overleaf project.
+     *
+     * Overleaf requires multipart/form-data with snip_name[] and snip[].
+     * - snip_name[]: input type="hidden" — always submitted regardless of visibility
+     * - snip[]:     textarea positioned off-screen with opacity:0 (NOT visibility:hidden
+     *               or display:none, which some browsers exclude from submission)
+     * The form is kept in DOM for 5 s to ensure the browser completes the POST.
+     */
+    function openOverleaf() {
+      syncAll();
+      const tex = buildLatex();
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://www.overleaf.com/docs';
+      form.target = '_blank';
+      form.enctype = 'multipart/form-data';
+      form.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden';
+
+      // snip_name[]: type=hidden is always submitted
+      const nameEl = document.createElement('input');
+      nameEl.type = 'hidden';
+      nameEl.name = 'snip_name[]';
+      nameEl.value = 'main.tex';
+      form.appendChild(nameEl);
+
+      // snip[]: must be a rendered (non-hidden) element for multipart submission;
+      // we make it invisible via opacity:0 positioned absolutely off-screen
+      const snipEl = document.createElement('textarea');
+      snipEl.name = 'snip[]';
+      snipEl.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none';
+      snipEl.value = tex;
+      form.appendChild(snipEl);
+
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 5000);
+    }
+
+    function downloadPdf() { if (pdfBlob) triggerDownload(URL.createObjectURL(pdfBlob), 'cv.pdf'); }
+    function copyLatex() { navigator.clipboard.writeText(document.getElementById('latex-code').textContent).then(() => alert('Copied!')); }
+    function downloadLatex() {
+      triggerDownload(URL.createObjectURL(new Blob([document.getElementById('latex-code').textContent], { type: 'text/plain' })), 'cv.tex');
+    }
+    function triggerDownload(url, filename) {
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    /* ═══ BUG REPORT ════════════════════════════════════════ */
+    document.getElementById('btn-bug').addEventListener('click', () => {
+      document.getElementById('bug-status').textContent = '';
+      document.getElementById('bug-modal').classList.add('open');
+    });
+    async function submitBugReport() {
+      const name = document.getElementById('bug-name').value.trim();
+      const email = document.getElementById('bug-email').value.trim();
+      const type = document.getElementById('bug-type').value;
+      const desc = document.getElementById('bug-desc').value.trim();
+      const st = document.getElementById('bug-status');
+      if (!desc) { st.innerHTML = '<span style="color:var(--danger)">Please fill in the description.</span>'; return; }
+      st.innerHTML = 'Sending\u2026 <span class="spinner"></span>';
+      try {
+        const res = await fetch('https://formspree.io/f/mrbarvev', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, type, description: desc, source: 'cv-generator' }),
+        });
+        if (res.ok) {
+          st.innerHTML = '<span style="color:#1e5e3a">&#10003; Sent! Thank you.</span>';
+          document.getElementById('bug-desc').value = '';
+          setTimeout(() => closeModal('bug-modal'), 1800);
+        } else if (res.status === 402) {
+          st.innerHTML = '<span style="color:var(--danger)">Monthly limit reached.</span>';
+        } else {
+          st.innerHTML = '<span style="color:var(--danger)">Failed to send. Try again.</span>';
+        }
+      } catch { st.innerHTML = '<span style="color:var(--danger)">Network error.</span>'; }
+    }
+
+    /* ═══ DEMO DATA ══════════════════════════════════════════ */
+    document.getElementById('btn-load-demo').addEventListener('click', loadDemo);
+
+    function loadDemo() {
+      setPiValue('name', 'Alex Fontaine');
+      setPiValue('title', 'Engineering student — Data Science & AI track');
+      setPiValue('email', 'alex.fontaine@centralesupelec.fr');
+      setPiValue('website', 'alexfontaine.dev/');
+      setPiValue('github', 'https://github.com/alexfontaine');
+      setPiValue('linkedin', 'https://www.linkedin.com/in/alex-fontaine/');
+
+      state.sections = [];
+      document.getElementById('sections-list').innerHTML = '';
+
+      function mk(type, name, rows) {
+        const sec = { id: uid(), type, name, entries: [] };
+        state.sections.push(sec);
+        if (type === 'pagebreak') { renderPagebreak(sec); renderSidebars(); return; }
+        renderSection(sec);
+        rows.forEach(fields => {
+          const e = { id: uid(), fields };
+          sec.entries.push(e);
+          renderEntry(sec.id, e);
+          setEntryValues(e, sec);
+        });
+        renderSidebars();
+      }
+
+      mk('education', 'Education', [
+        {
+          degree: 'M.Sc. in Data Science & Artificial Intelligence',
+          institution: 'École CentraleSupélec', note: '',
+          dateRange: 'Sep 2024 -- Present', location: 'Gif-sur-Yvette, France'
+        },
+        {
+          degree: "Diplôme d'ingénieur (Engineering Degree)",
+          institution: 'École CentraleSupélec', note: 'Valedictorian, class of 2024',
+          dateRange: 'Sep 2021 -- Aug 2024', location: 'Gif-sur-Yvette, France'
+        },
+        {
+          degree: 'Classes Préparatoires MPSI / MP*',
+          institution: 'Lycée Louis-le-Grand', note: '',
+          dateRange: 'Sep 2019 -- Aug 2021', location: 'Paris, France'
+        },
+      ]);
+
+      mk('publication', 'Publications', [
+        {
+          title: 'Uncertainty Quantification in Neural Load Forecasting for Smart Grids',
+          venue: 'Workshop on ML for Physical Sciences, NeurIPS, 2024'
+        },
+        {
+          title: 'Sparse Graph Attention for Multivariate Time-Series Anomaly Detection',
+          venue: 'ECML-PKDD, 2025'
+        },
+      ]);
+
+      mk('experience', 'Professional Experience', [
+        {
+          role: 'Research Internship',
+          org: 'CEA — Commissariat à l\'Énergie Atomique',
+          dateRange: 'Jun 2024 -- Aug 2024', location: 'Saclay, France',
+          description: 'Developed a Transformer-based forecasting pipeline for short-term electrical grid load prediction. Designed custom positional encodings for irregular time series and benchmarked against LSTM and N-BEATS baselines. Reduced mean absolute error by 14% relative to the production baseline on a three-year dataset of smart meter readings.',
+          contact: 'Dr. Claire Dumont (CEA/DRT)'
+        },
+        {
+          role: 'Data Science Internship',
+          org: 'Airbus Operations',
+          dateRange: 'Jun 2023 -- Aug 2023', location: 'Toulouse, France',
+          description: 'Built an anomaly detection system for aircraft sensor data streams using an autoencoder combined with a sliding-window statistical test. Integrated the pipeline into an existing MLOps workflow (MLflow, Docker) and validated it on simulated fault injection scenarios across 12 sensor channels.',
+          contact: ''
+        },
+        {
+          role: 'Research Assistant',
+          org: 'MICS Laboratory, École CentraleSupélec',
+          dateRange: 'Jan 2024 -- May 2024', location: 'Gif-sur-Yvette, France',
+          description: 'Studied the robustness of image classifiers under distribution shift. Implemented augmentation strategies (AugMix, CutMix, RandAugment) and evaluated their effect on out-of-distribution generalization across four benchmark datasets. Contributed to an ongoing survey on robustness evaluation protocols.',
+          contact: 'Prof. Marc Tessier (MICS, CentraleSupélec)'
+        },
+      ]);
+
+      mk('pagebreak', 'Page Break', []);
+
+      mk('project', 'Projects', [
+        {
+          title: 'Satellite Image Segmentation for Land Use Classification',
+          url: 'https://github.com/alexfontaine/satellite-segmentation',
+          description: 'Trained a U-Net model with a ResNet-50 encoder on the EuroSAT and DeepGlobe datasets for multi-class land cover segmentation. Applied test-time augmentation and a CRF post-processing step, reaching a mean IoU of 81.3% on the held-out test split.'
+        },
+        {
+          title: 'Real-Time Speech Enhancement with Lightweight CNNs',
+          url: 'https://github.com/alexfontaine/speech-denoising',
+          description: 'Designed a depthwise-separable convolutional network for single-channel speech denoising with sub-5 ms inference latency on CPU. Trained on a synthetic mixture of clean speech (LibriSpeech) and environmental noise, achieving a PESQ improvement of +1.4 over the noisy baseline.'
+        },
+        {
+          title: 'Autonomous Robot Navigation in Unknown Environments',
+          url: 'https://github.com/alexfontaine/robot-nav',
+          description: 'Implemented a ROS-based navigation stack combining frontier exploration with an obstacle avoidance policy trained via PPO. Evaluated in Gazebo simulation and on a physical TurtleBot, achieving complete map coverage in under 4 minutes on 6x6 m floor plans.'
+        },
+        {
+          title: 'Collaborative Filtering Recommender System',
+          url: 'https://github.com/alexfontaine/recsys',
+          description: 'Built an ALS matrix factorization model for implicit feedback, then extended it with a neural two-tower architecture. Deployed a Flask API serving recommendations in under 20 ms, evaluated on the MovieLens-1M and LastFM datasets.'
+        },
+        {
+          title: "Subset-Python Compiler in OCaml",
+          url: 'https://github.com/alexfontaine/pyt-compiler',
+          description: 'Implemented a compiler for a typed subset of Python targeting x86-64 assembly. Built a lexer (Ocamllex), parser (Menhir), Hindley-Milner type inference pass, and register allocation via graph coloring.'
+        },
+      ]);
+
+      mk('skills', 'Skills', [
+        { category: 'Programming:', items: 'Python (PyTorch, TensorFlow, Scikit-Learn, NumPy, Pandas), C++, Java, MATLAB, OCaml, SQL' },
+        { category: 'Artificial Intelligence:', items: 'Deep Learning, Time-Series Analysis, Computer Vision, Optimization, MLOps (Docker, MLflow)' },
+        { category: 'Tools:', items: 'Git, Linux, LaTeX, ROS, Slurm (Cluster Computing)' },
+      ]);
+
+      mk('achievements', 'Achievements', [
+        { text: '2nd place at the CentraleSupélec internal Kaggle challenge on predictive maintenance (92 teams)' },
+        { text: 'Finalist at the Agorize AI for Energy Challenge organized by EDF' },
+      ]);
+
+      mk('languages', 'Languages', [
+        { language: 'French', level: 'Native', certs: '' },
+        { language: 'English', level: 'Fluent', certs: 'TOEIC: 970/990' },
+        { language: 'Spanish', level: 'Intermediate', certs: '' },
+      ]);
+    }
+
+    /* ── Init ── */
+    renderPersonalInfo();
+    addSection('education');
+  </script>
 </body>
+
 </html>
