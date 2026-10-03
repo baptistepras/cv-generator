@@ -299,3 +299,7 @@ The website posts the generated LaTeX to Overleaf (`encoded_snip`) and opens it 
 - Website field “Website” is treated as a domain and linked with `https://` automatically.
 
 ---
+
+## License
+
+MIT, see [LICENSE](LICENSE).
