@@ -302,4 +302,4 @@ The website posts the generated LaTeX to Overleaf (`encoded_snip`) and opens it 
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+[PolyForm Noncommercial 1.0.0](LICENSE). You may use, modify and share this code for any noncommercial purpose, such as personal, educational or hobby use. Commercial use is not allowed.
