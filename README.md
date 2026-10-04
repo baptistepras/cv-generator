@@ -302,4 +302,4 @@ The website posts the generated LaTeX to Overleaf (`encoded_snip`) and opens it 
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](LICENSE). You may use, modify and share this code for any noncommercial purpose, such as personal, educational or hobby use. Commercial use is not allowed.
+[PolyForm Noncommercial 1.0.0](LICENSE). You may use, modify and share this code for any noncommercial purpose, such as personal, educational or hobby use. Commercial use is not allowed. The fonts in `fonts/` (DM Sans and JetBrains Mono) keep their own SIL Open Font License, included next to them.
